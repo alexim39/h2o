@@ -1,0 +1,5 @@
+# DENY all web access to backend root (above public_html)
+# This file lives in /home/user/hydro-api/.htaccess (backend root, NOT public)
+# If backend is accidentally placed inside public_html, this blocks it.
+
+Require all denied

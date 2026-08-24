@@ -1,0 +1,10 @@
+# HYDRO+ ELITE — Angular SPA .htaccess (src copy for build)
+# This file is copied via angular.json assets to dist. Keep in sync with public/.htaccess
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+  RewriteRule ^ index.html [L]
+</IfModule>
