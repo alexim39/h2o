@@ -13,14 +13,19 @@ import { ToastService } from '../../core/services/toast.service';
     <section class="hero">
       <div class="container hero-grid">
         <div class="copy">
+          <div class="health-hero glass">
+            <span class="health-eyebrow">Health • Longevity • Purity</span>
+            <h2 class="health-title">Stay Healthy <em>& Add Years</em> to Your Life</h2>
+            <p class="health-sub">by drinking the purest hydrogen water — daily ritual, cellular renewal</p>
+          </div>
           <span class="eyebrow">H2Os • SPE • PEM • 1600 PPB • Platinum Titanium</span>
           <h1>
             <span class="kicker">H2Os presents</span>
             <span class="title">Ultra <em>H₂</em></span>
-            <span class="sub">Hydration, upgraded.</span>
+            <span class="sub">Hydration, upgraded. Health, elevated.</span>
           </h1>
           <p class="lead">
-            Advanced hydrogen infusion technology. <strong>1200–1600 ppb</strong> ultra-pure H₂ in 3 minutes. Borosilicate clarity, loop cap, and the ritual that turns water into cellular fuel.
+            Advanced hydrogen infusion technology. <strong>1200–1600 ppb</strong> ultra-pure H₂ in 3 minutes. The ritual that turns water into cellular fuel.
           </p>
 
           <div class="price-row">
@@ -36,8 +41,8 @@ import { ToastService } from '../../core/services/toast.service';
             </a>
           </div>
           <div class="other-products">
-            <a routerLink="/store" class="btn-ghost other-btn">Browse Other Products — From ₦40,000 <span>→</span></a>
-            <span class="free-ship">✓ Free shipping on all orders • Also from ₦40k</span>
+            <a routerLink="/store" class="btn-ghost other-btn">See Other Products — From ₦40,000 upward <!-- <span>→</span> --></a>
+            <span class="free-ship">✓ Free shipping on all orders <!-- • Also from ₦40k --></span>
           </div>
 
           <div class="trust">
@@ -56,35 +61,40 @@ import { ToastService } from '../../core/services/toast.service';
         <div class="visual">
           <div class="bottle-stage">
             <div class="glow"></div>
-            <!-- Premium Ultra H₂ mock — resembles real bottle (/images/ultraH2.jpeg) with bubbles -->
-            <div class="ultra-mock">
-              <div class="mock-handle"></div>
-              <div class="mock-cap"></div>
-              <div class="mock-body">
-                <div class="mock-water">
-                  <div class="mock-bubbles">
-                    <span style="--x:18%; --d:1.9s; --s:3px;"></span>
-                    <span style="--x:32%; --d:2.4s; --s:2px;"></span>
-                    <span style="--x:48%; --d:2.0s; --s:4px;"></span>
-                    <span style="--x:61%; --d:2.7s; --s:2.5px;"></span>
-                    <span style="--x:74%; --d:1.8s; --s:3.5px;"></span>
-                    <span style="--x:26%; --d:2.9s; --s:2px;"></span>
-                    <span style="--x:58%; --d:2.2s; --s:3px;"></span>
-                    <span style="--x:82%; --d:2.5s; --s:2px;"></span>
+            <!-- H2Os Obsidian Ultra — photoreal matte, brushed steel, H2Os 1.2ppm, bottom-rising bubbles -->
+            <div class="obsidian-wrap">
+              <div class="obsidian-mock">
+                <div class="obsidian-cap"></div>
+                <div class="obsidian-band">
+                  <span class="brand">H2Os</span>
+                  <span class="ppm"><small>H2</small><strong>1.2</strong><small>ppm</small></span>
+                </div>
+                <div class="obsidian-body">
+                  <span class="rim left"></span>
+                  <span class="rim right"></span>
+                  <div class="body-highlight"></div>
+                  <div class="body-watermark">H2Os</div>
+                  <div class="obsidian-bubbles">
+                    <span style="--x:22%; --d:2.8s; --s:2.2px; --delay:0s"></span>
+                    <span style="--x:34%; --d:3.2s; --s:1.8px; --delay:0.4s"></span>
+                    <span style="--x:48%; --d:2.6s; --s:2.6px; --delay:0.2s"></span>
+                    <span style="--x:62%; --d:3.0s; --s:2.0px; --delay:0.7s"></span>
+                    <span style="--x:74%; --d:2.9s; --s:1.6px; --delay:0.1s"></span>
+                    <span style="--x:28%; --d:3.4s; --s:1.4px; --delay:0.9s"></span>
+                    <span style="--x:52%; --d:3.1s; --s:2.4px; --delay:0.5s"></span>
+                    <span style="--x:66%; --d:2.7s; --s:1.9px; --delay:0.3s"></span>
+                    <span style="--x:38%; --d:3.6s; --s:1.5px; --delay:0.8s"></span>
+                    <span style="--x:58%; --d:2.5s; --s:2.1px; --delay:1.0s"></span>
+                    <span style="--x:44%; --d:3.3s; --s:1.7px; --delay:0.6s"></span>
+                    <span style="--x:78%; --d:2.4s; --s:1.9px; --delay:1.2s"></span>
                   </div>
-                  <div class="mock-label">
-                    <strong>ULTRA</strong><strong>H₂</strong>
-                    <em>H2Os • Advanced Hydrogen</em>
-                  </div>
-                  <div class="mock-shine"></div>
+                </div>
+                <div class="obsidian-base">
+                  <button class="base-power" aria-label="Power"><span></span></button>
                 </div>
               </div>
-              <div class="mock-base">
-                <button class="power-btn" aria-label="Power"><span class="power-icon"></span></button>
-                <span class="timer">0:02</span>
-                <span class="base-dot"></span>
-                <span class="base-line"></span>
-              </div>
+              <div class="obsidian-reflection"></div>
+              <div class="obsidian-glow"></div>
             </div>
             <div class="float-card">
               <span class="eyebrow">Live infusion</span>
@@ -169,6 +179,9 @@ import { ToastService } from '../../core/services/toast.service';
               <div class="icon">{{ f.icon }}</div>
               <h3>{{ f.title }}</h3>
               <p>{{ f.desc }}</p>
+              @if (f.health) {
+                <p class="health"><span>→ Health benefit:</span> {{ f.health }}</p>
+              }
             </article>
           }
         </div>
@@ -183,6 +196,10 @@ import { ToastService } from '../../core/services/toast.service';
             <div class="bar-row"><span>Premium Competitor</span><div class="track"><span style="width: 46%"></span></div><b>~740 ppb</b></div>
             <div class="bar-row elite"><span>Ultra H₂</span><div class="track"><span style="width: 100%"></span></div><b>1600 ppb</b></div>
           </div>
+        </div>
+        <div class="center" style="margin-top:18px;">
+          <a routerLink="/science" class="btn-neon">Read More — Full Science & Health Benefits →</a>
+          <p class="muted" style="margin-top:8px; font-size:12px;">Curious if hydrogen can help your condition? Get the detailed, honest guide.</p>
         </div>
       </div>
     </section>
@@ -292,7 +309,14 @@ import { ToastService } from '../../core/services/toast.service';
   styles: [`
     .hero { padding: 28px 0 0; border-bottom: 1px solid var(--border); }
     .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; min-height: 640px; padding: 36px 24px 40px; }
-    .copy h1 { margin: 16px 0 14px; line-height: 0.9; }
+    .health-hero{ margin-bottom: 14px; padding: 14px 16px; border-radius: 16px; border:1px solid rgba(0,255,136,0.14); background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,255,136,0.02)); position:relative; overflow:hidden; }
+    .health-hero::before{ content:""; position:absolute; left:-20%; top:-40%; width:60%; height:180%; background: radial-gradient(ellipse at center, rgba(0,255,136,0.10), transparent 68%); pointer-events:none; }
+    .health-eyebrow{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--neon); display:flex; align-items:center; gap:8px; }
+    .health-eyebrow::before{ content:"◆"; color:var(--neon); font-size:8px; }
+    .health-title{ font-family:'Space Grotesk',sans-serif; font-size: clamp(22px, 3.2vw, 30px); font-weight:800; letter-spacing:-0.02em; line-height:1; margin: 6px 0 4px; }
+    .health-title em{ font-style:normal; color:var(--neon); text-shadow: 0 0 14px rgba(0,255,136,0.32); }
+    .health-sub{ font-size:12px; color:var(--text-secondary); letter-spacing:0.02em; }
+    .copy h1 { margin: 14px 0 14px; line-height: 0.9; }
     .kicker { display:block; font-family:'Space Grotesk',sans-serif; font-size: 13px; letter-spacing:0.18em; text-transform:uppercase; color: var(--neon); font-weight:700; }
     .title { display:block; font-family:'Space Grotesk',sans-serif; font-size: clamp(42px, 6vw, 64px); font-weight:700; letter-spacing:-0.03em; }
     .title em { font-style: normal; color: var(--neon); text-shadow: 0 0 20px rgba(0,255,136,0.35); }
@@ -304,22 +328,33 @@ import { ToastService } from '../../core/services/toast.service';
     .compare { font-size:13px; color:var(--text-muted); text-decoration:line-through; }
     .save { font-size:11px; background: rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.18); color:var(--neon); padding:4px 8px; border-radius:999px; font-weight:700; }
     .cta-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    .other-products{ margin-top:14px; display:flex; flex-direction:column; gap:8px; max-width: 520px; }
-    .other-btn{
-      justify-content:center; gap:10px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)) !important;
-      border:1px solid rgba(255,255,255,0.12) !important;
-      color: var(--text-primary) !important;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.24);
+    .other-products{
+      margin-top:18px; display:flex; flex-direction:column; gap:10px; max-width: 520px;
+      padding:14px; border-radius:18px;
+      background: linear-gradient(135deg, rgba(255,215,0,0.14) 0%, rgba(255,215,0,0.06) 42%, rgba(180, 140, 0, 0.06) 100%);
+      border:1px solid rgba(255,215,0,0.22); box-shadow: 0 0 0 1px rgba(255,215,0,0.08), 0 12px 36px rgba(255,215,0,0.10), 0 8px 24px rgba(0,0,0,0.28);
       position:relative; overflow:hidden;
     }
-    .other-btn::before{ content:""; position:absolute; inset:0; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.06), transparent); opacity:0; transition:.32s; }
+    .other-products::before{ content:""; position:absolute; inset:-1px; background: radial-gradient(420px 120px at 18% 0%, rgba(255,215,0,0.16), transparent 68%); pointer-events:none; }
+    .other-products::after{ content:""; position:absolute; left:0; right:0; top:0; height:1px; background: linear-gradient(90deg, transparent, rgba(255,215,0,0.28), transparent); }
+    .other-btn{
+      justify-content:center; gap:10px; width:100%;
+      background: linear-gradient(180deg, #0B0E14, #050507) !important;
+      border:1px solid rgba(255,215,0,0.32) !important;
+      color: #FFD60A !important;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 0 1px rgba(255,215,0,0.10), 0 10px 28px rgba(0,0,0,0.32), 0 0 18px rgba(255,215,0,0.08);
+      position:relative; overflow:hidden; font-weight:800; letter-spacing:0.02em;
+      padding:14px 18px !important; font-size:13px !important;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.42);
+      width:100%; display:inline-flex; align-items:center; transition:.32s;
+    }
+    .other-btn::before{ content:""; position:absolute; inset:0; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.10), transparent); opacity:0; transition:.32s; }
     .other-btn:hover::before{ opacity:1; }
-    .other-btn:hover{ border-color: rgba(0,255,136,0.22) !important; box-shadow: 0 0 0 1px rgba(0,255,136,0.12), 0 12px 32px rgba(0,0,0,0.32); transform: translateY(-1px); }
-    .other-btn span{ color: var(--neon); }
-    .free-ship{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color: var(--text-secondary); display:flex; align-items:center; gap:6px; justify-content:center; }
-    .free-ship::before{ content:"✓"; width:16px;height:16px;border-radius:50%; background: rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.18); color:var(--neon); display:grid; place-items:center; font-size:9px; }
+    .other-btn:hover{ border-color: rgba(255,215,0,0.42) !important; box-shadow: 0 0 0 1px rgba(255,215,0,0.18), 0 14px 36px rgba(255,215,0,0.10), 0 12px 32px rgba(0,0,0,0.32); transform: translateY(-1px); }
+    .other-btn span{ color: #FFD60A; }
+    .free-ship{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color: #00FF88; display:flex; align-items:center; gap:8px; justify-content:center; font-weight:700; background: rgba(255,215,0,0.10); border:1px solid rgba(255,215,0,0.18); padding:6px 10px; border-radius:999px; width:fit-content; align-self:center; }
+    .free-ship::before{ content:"✓"; width:18px;height:18px;border-radius:50%; background: #00FF88; color:#050507; display:grid; place-items:center; font-size:11px; font-weight:800; box-shadow:0 0 10px rgba(255,215,0,0.4); }
     .video-btn { display:inline-flex; align-items:center; gap:8px; }
     .video-btn .play { width:22px;height:22px;border-radius:50%; background:var(--neon); color:#050507; display:grid; place-items:center; font-size:10px; }
     .trust { display:flex; align-items:center; gap:10px; margin-top: 18px; font-size:12px; color: var(--text-secondary); }
@@ -333,36 +368,114 @@ import { ToastService } from '../../core/services/toast.service';
     .visual { position: relative; }
     .bottle-stage { position: relative; background: radial-gradient(420px 320px at 50% 38%, rgba(0,255,136,0.10), transparent 70%), linear-gradient(180deg, #0F1115 0%, #07080A 100%); border:1px solid var(--border); border-radius: 28px; height: 540px; display:grid; place-items:center; overflow:hidden; padding: 18px; }
     .glow { position:absolute; inset:auto 18% 14% 18%; height: 120px; background: radial-gradient(ellipse at center, rgba(0,255,136,0.22), transparent 70%); filter: blur(18px); }
-    /* Ultra H₂ hyper-premium mock — obsidian luxury, crystal glass, power button, dense bubbles */
-    .ultra-mock { width: 184px; height: 392px; position:relative; z-index:1; filter: drop-shadow(0 28px 48px rgba(0,0,0,0.62)) drop-shadow(0 0 24px rgba(0,255,136,0.08)); display:flex; flex-direction:column; align-items:center; }
-    .mock-handle { width: 76px; height: 28px; border: 3.5px solid #090A0E; border-bottom: none; border-radius: 18px 18px 0 0; position:absolute; top:0; left:50%; transform:translateX(-50%); background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent); box-shadow: 0 3px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08); }
-    .mock-handle::after{ content:""; position:absolute; left:10%; right:10%; top:3px; height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent); }
-    .mock-cap { width: 88px; height: 32px; margin-top: 18px; background: linear-gradient(180deg,#F3F4F6 0%, #E5E7EB 8%, #C5CAD3 18%, #8A919E 48%, #5E6674 78%, #3A414D 100%); border-radius: 7px 7px 4px 4px; border:1px solid rgba(255,255,255,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), inset 0 -1px 0 rgba(0,0,0,0.22), 0 6px 16px rgba(0,0,0,0.42); position:relative; }
-    .mock-cap::before{ content:""; position:absolute; inset: 5px 6px 7px 6px; border:1px solid rgba(255,255,255,0.12); border-radius: 4px; pointer-events:none; }
-    .mock-cap::after{ content:""; position:absolute; left:8%; right:8%; top:5px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.82), transparent); }
-    .mock-body { width: 162px; height: 290px; margin-top: 2px; background: linear-gradient(180deg, rgba(242,252,249,0.34) 0%, rgba(210,242,235,0.20) 18%, rgba(170,228,212,0.14) 42%, rgba(190,236,224,0.18) 68%, rgba(210,242,235,0.24) 100%); border:1px solid rgba(255,255,255,0.18); border-radius: 20px 20px 12px 12px; position:relative; overflow:hidden; backdrop-filter: blur(2px); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -8px 24px rgba(0,255,136,0.06), 0 12px 32px rgba(0,0,0,0.38); }
-    .mock-body::before{ content:""; position:absolute; inset:0; background: linear-gradient(90deg, transparent 12%, rgba(255,255,255,0.06) 22%, transparent 36%, transparent 68%, rgba(255,255,255,0.04) 82%, transparent 94%); pointer-events:none; }
-    .mock-water { position:absolute; inset: 8px 7px 50px 7px; background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(0,255,136,0.04) 42%, rgba(0,255,136,0.09) 86%); border-radius: 14px 14px 10px 10px; overflow:hidden; box-shadow: inset 0 0 16px rgba(0,255,136,0.10), inset 0 1px 0 rgba(255,255,255,0.10); }
-    .mock-water::after{ content:""; position:absolute; left:0; right:0; bottom:0; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.22), transparent); }
-    .mock-bubbles span{ position:absolute; bottom:-8px; width:var(--s); height:var(--s); left:var(--x); background: radial-gradient(circle at 28% 28%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.85) 28%, rgba(0,255,136,0.72) 62%, rgba(0,255,136,0.42) 100%); border-radius:50%; box-shadow: 0 0 8px rgba(0,255,136,0.55), 0 1px 2px rgba(0,0,0,0.18); animation: rise var(--d) linear infinite; opacity:0.92; }
-    .mock-bubbles span:nth-child(3){ --s:4.5px; } .mock-bubbles span:nth-child(5){ --s:2px; }
-    @keyframes rise{ 0%{ transform: translateY(0) scale(0.78) translateX(0); opacity:0.95 } 28%{ transform: translateY(-70px) scale(0.92) translateX(1px); } 100%{ transform: translateY(-240px) scale(1.14) translateX(-1px); opacity:0 } }
-    .mock-bubbles span:nth-child(2){ animation-delay: 0.3s; } .mock-bubbles span:nth-child(4){ animation-delay: 0.6s; } .mock-bubbles span:nth-child(6){ animation-delay: 0.9s; }
-    .mock-label { position:absolute; right: 7px; top:50%; transform: translateY(-50%); writing-mode: vertical-rl; text-orientation: mixed; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border-left:1px solid rgba(255,255,255,0.06); padding: 12px 7px; display:flex; flex-direction:column; align-items:center; gap:3px; border-radius: 8px; backdrop-filter: blur(2px); }
-    .mock-label strong{ font-family:'Space Grotesk',sans-serif; font-size:23px; font-weight:800; letter-spacing:0.03em; color: #0B0E14; text-shadow: 0 1px 0 rgba(255,255,255,0.52), 0 0 12px rgba(255,255,255,0.18); line-height:1; }
-    .mock-label strong:first-child{ font-size:19px; letter-spacing:0.14em; color: #0B0E14; }
-    .mock-label em{ font-size:6.5px; letter-spacing:0.14em; text-transform:uppercase; color: rgba(11,14,20,0.58); font-style:normal; writing-mode: horizontal-tb; transform: rotate(180deg); margin-top:8px; font-family:'JetBrains Mono', monospace; font-weight:700; }
-    .mock-shine{ position:absolute; left:9%; top:4%; width:13%; height:80%; background: linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.16) 32%, transparent 74%); border-radius:999px; opacity:0.95; filter: blur(0.2px); }
-    .mock-shine::after{ content:""; position:absolute; left:44%; top:8%; width:32%; height:62%; background: linear-gradient(180deg, rgba(255,255,255,0.16), transparent); border-radius:999px; }
-    .mock-base { width: 144px; height: 56px; margin-top: -1px; background: linear-gradient(180deg,#1A1E26 0%, #0F1218 42%, #050507 100%); border:1px solid rgba(255,255,255,0.10); border-radius: 0 0 16px 16px; display:flex; align-items:center; justify-content:space-between; padding:0 11px 0 12px; position:relative; box-shadow: 0 10px 24px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.4); }
-    .mock-base::before{ content:""; position:absolute; top:0; left:8%; right:8%; height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
-    .power-btn{ width:28px;height:28px;border-radius:50%; background: radial-gradient(circle at 32% 30%, #2F3542, #0E1116 62%, #050507); border:1px solid rgba(255,255,255,0.16); display:grid; place-items:center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -1px 2px rgba(0,0,0,0.5), 0 3px 10px rgba(0,0,0,0.55); flex-shrink:0; cursor:pointer; transition: transform .12s, box-shadow .12s; }
-    .power-btn:active{ transform: scale(0.96); }
-    .power-icon{ width:13px;height:13px;border:1.9px solid var(--neon); border-radius:50%; position:relative; box-shadow: 0 0 8px rgba(0,255,136,0.68), inset 0 0 4px rgba(0,255,136,0.18); display:block; }
-    .power-icon::after{ content:""; position:absolute; left:50%; top:2.2px; width:1.9px; height:6.5px; background: var(--neon); transform:translateX(-50%); border-radius:999px; box-shadow: 0 0 6px var(--neon); }
-    .mock-base .timer{ font-family:'JetBrains Mono', monospace; font-size:14px; font-weight:800; color: #00FF88; text-shadow: 0 0 10px rgba(0,255,136,0.92), 0 0 22px rgba(0,255,136,0.42), 0 1px 0 rgba(0,0,0,0.6); letter-spacing:0.07em; }
-    .mock-base .base-dot{ width:7px; height:7px; border-radius:50%; background: var(--neon); box-shadow: 0 0 12px var(--neon), 0 0 22px rgba(0,255,136,0.42); animation: pulseLed 1.6s infinite; }
-    .mock-base .base-line{ position:absolute; bottom:7px; left:50%; transform:translateX(-50%); width:32px; height:2.5px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent); border-radius:999px; box-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+    /* Obsidian Real — photoreal matte, brushed steel, H2Os band, bottom→top bubbles, reflection */
+    .obsidian-wrap{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; filter: drop-shadow(0 32px 56px rgba(0,0,0,0.68)) drop-shadow(0 0 32px rgba(0,200,160,0.09)); }
+    .obsidian-mock{
+      width:168px; height: 412px; display:flex; flex-direction:column; align-items:center; position:relative;
+      --cap-h: 30px; --band-h: 28px; --body-h: 304px;
+    }
+    .obsidian-cap{
+      width:92px; height:var(--cap-h); background: linear-gradient(180deg,#6E737D 0%, #4E535D 12%, #32373F 38%, #1E2229 78%, #16191E 100%);
+      border-radius: 12px 12px 6px 6px; border:1px solid rgba(255,255,255,0.09);
+      box-shadow: inset 0 1.2px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.48), 0 8px 20px rgba(0,0,0,0.54), 0 0 0 1px rgba(0,0,0,0.18);
+      position:relative;
+    }
+    .obsidian-cap::before{ content:""; position:absolute; inset: 5px 6px 7px 6px; border:1px solid rgba(255,255,255,0.08); border-radius:5px; pointer-events:none; }
+    .obsidian-cap::after{ content:""; position:absolute; left:10%; right:10%; top:6px; height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.34), transparent); }
+    .obsidian-band{
+      width:152px; height:28px; margin-top:4px;
+      background: linear-gradient(180deg,#0E1218 0%, #0A0E14 100%);
+      border-left:1px solid rgba(255,255,255,0.06); border-right:1px solid rgba(255,255,255,0.06);
+      border-top:1px solid rgba(255,255,255,0.04); border-bottom:1px solid rgba(0,232,200,0.10);
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 4px 12px;
+      position:relative; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .obsidian-band .brand{
+      font-family:'Space Grotesk',sans-serif; font-size:9px; font-weight:800; letter-spacing:0.12em;
+      color:rgba(0,232,200,0.92); text-shadow: 0 0 8px rgba(0,232,200,0.42);
+      display:flex; align-items:baseline; gap:1px; flex-shrink:0; opacity:0.96;
+    }
+    .obsidian-band .brand sub{ font-size:7px; font-weight:700; vertical-align: baseline; opacity:0.9; }
+    .obsidian-band .ppm{
+      display:flex; align-items:baseline; gap:3px;
+      padding: 2px 0 3px; position:relative;
+      line-height:1; flex-shrink:0;
+    }
+    .obsidian-band .ppm::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:1px;
+      background: linear-gradient(90deg, transparent, rgba(0,232,200,0.42), transparent);
+      box-shadow: 0 0 6px rgba(0,232,200,0.28);
+    }
+    .obsidian-band .ppm small{ font-family:'JetBrains Mono', monospace; font-size:5px; letter-spacing:0.08em; color:rgba(0,232,200,0.62); text-transform:uppercase; line-height:1; }
+    .obsidian-band .ppm strong{ font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:800; color:#00E8C8; text-shadow:0 0 6px rgba(0,232,200,0.62); line-height:1; letter-spacing:0.02em; }
+    .obsidian-body{
+      width:154px; height:var(--body-h);
+      background:
+        radial-gradient(420px 200px at 18% 12%, rgba(255,255,255,0.06), transparent 62%),
+        linear-gradient(180deg, #11151B 0%, #0D0F14 14%, #090B0F 38%, #070A0D 82%, #05070A 100%);
+      border-left:1px solid rgba(0,232,200,0.09); border-right:1px solid rgba(0,232,200,0.09); border-bottom:none;
+      position:relative; overflow:hidden; border-radius: 0;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -16px 28px rgba(0,0,0,0.46);
+    }
+    .obsidian-body::before{ content:""; position:absolute; left:50%; top:22%; width:1px; height:52%; background: linear-gradient(180deg, transparent, rgba(255,215,0,0.08), transparent); transform:translateX(-50%); }
+    .obsidian-body .rim{ position:absolute; top:0; bottom:0; width:1px; background: linear-gradient(180deg, transparent, rgba(0,232,200,0.32) 14%, rgba(0,232,200,0.58) 36%, rgba(0,232,200,0.24) 72%, transparent); filter: blur(0.5px); opacity:0.92; }
+    .obsidian-body .rim.left{ left:0; } .obsidian-body .rim.right{ right:0; }
+    .body-highlight{ position:absolute; left:9%; top:0; bottom:0; width:12%; background: linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 28%, transparent 68%); filter: blur(0.7px); pointer-events:none; }
+    .body-highlight::after{ content:""; position:absolute; left:42%; top:0; bottom:0; width:18%; background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%); }
+    .body-watermark{
+      position:absolute; left:50%; top:50%; transform: translate(-50%,-52%) rotate(-90deg);
+      font-family:'Space Grotesk',sans-serif; font-size:38px; font-weight:800; letter-spacing:0.14em;
+      color: rgba(255,255,255,0.042); text-shadow: 0 1px 0 rgba(255,255,255,0.05);
+      pointer-events:none; user-select:none; white-space:nowrap;
+    }
+    .obsidian-bubbles{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .obsidian-bubbles span{
+      position:absolute; bottom:-12px; width:var(--s); height:var(--s); left:var(--x);
+      background: radial-gradient(circle at 32% 28%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.94) 18%, rgba(210,255,240,0.78) 34%, rgba(0,232,200,0.62) 58%, rgba(0,160,130,0.32) 100%);
+      border-radius:50%; box-shadow: 0 0 7px rgba(0,232,200,0.48), inset 0 1px 1px rgba(255,255,255,0.96), inset 0 -1px 1px rgba(0,0,0,0.12);
+      animation: riseReal var(--d) linear infinite; animation-delay: var(--delay); opacity:0;
+    }
+    @keyframes riseReal{
+      0%{ transform: translateY(0) translateX(0) scale(0.68); opacity:0; }
+      6%{ opacity:0.98; }
+      82%{ opacity:0.94; }
+      100%{ transform: translateY(-272px) translateX(var(--drift, 0px)) scale(1.06); opacity:0; }
+    }
+    .obsidian-bubbles span:nth-child(odd){ --drift: 1.2px; } .obsidian-bubbles span:nth-child(even){ --drift: -1px; }
+    .obsidian-bubbles span:nth-child(3n){ filter: brightness(1.08); }
+    .obsidian-base{
+      width:152px; height:32px;
+      background: linear-gradient(180deg,#4A4F58 0%, #2E333C 26%, #1C1F26 78%, #121417 100%);
+      border:1px solid rgba(255,255,255,0.08); border-top:none; border-radius: 0 0 16px 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255,255,255,0.14); position:relative;
+      display:grid; place-items:center;
+    }
+    .obsidian-base::after{ content:""; position:absolute; left:8%; right:8%; top:0; height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent); }
+    .base-power{
+      width:22px; height:22px; border-radius:50%;
+      background: radial-gradient(circle at 32% 28%, #2A3038, #0E1116 62%, #080A0E);
+      border:1px solid rgba(0,232,200,0.18);
+      display:grid; place-items:center; cursor:pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 0 10px rgba(0,232,200,0.16), 0 2px 8px rgba(0,0,0,0.42);
+    }
+    .base-power span{ width:8px; height:8px; border:1.6px solid #00E8C8; border-radius:50%; position:relative; box-shadow:0 0 7px rgba(0,232,200,0.62); display:block; }
+    .base-power span::after{ content:""; position:absolute; left:50%; top:1.5px; width:1.4px; height:5px; background:#00E8C8; transform:translateX(-50%); border-radius:999px; box-shadow:0 0 5px #00E8C8; }
+    .obsidian-reflection{
+      width:152px; height:64px; margin-top:3px;
+      background: linear-gradient(180deg, rgba(0,232,200,0.11) 0%, rgba(0,232,200,0.04) 32%, rgba(0,0,0,0) 72%);
+      filter: blur(0.7px); opacity:0.86; border-radius: 0 0 12px 12px; position:relative; overflow:hidden;
+    }
+    .obsidian-reflection::before{ content:""; position:absolute; left:0; right:0; top:0; height:22px; background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent); }
+    .obsidian-reflection::after{ content:""; position:absolute; left:10%; right:10%; top:8px; height:1px; background: linear-gradient(90deg, transparent, rgba(0,232,200,0.18), transparent); }
+    .obsidian-glow{ position:absolute; inset:auto 8% -16% 8%; height:68px; background: radial-gradient(ellipse at center, rgba(0,232,200,0.13), transparent 68%); filter:blur(16px); pointer-events:none; }
+    @media(max-width: 640px){
+      .obsidian-mock{ width:152px; --body-h: 268px; height: 368px; }
+      .obsidian-body{ height:var(--body-h); }
+      .obsidian-band .brand{ font-size:9px; }
+      .obsidian-band .ppm strong{ font-size:9px; }
+      .bottle-stage{ height: 480px; }
+    }
     .float-card{ position:absolute; right:14px; bottom:14px; background: rgba(11,13,16,0.92); border:1px solid var(--border); border-radius:16px; padding:12px 14px; min-width:170px; backdrop-filter: blur(12px); z-index:2; }
     .float-card strong{ display:block; font-size:12px; margin: 2px 0 6px; }
     .float-card .bar{ height:4px; background: rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; }
@@ -399,6 +512,8 @@ import { ToastService } from '../../core/services/toast.service';
     .benefit .icon { width:36px;height:36px;border-radius:10px;background:rgba(0,255,136,0.10);border:1px solid rgba(0,255,136,0.18);display:grid;place-items:center;color:var(--neon);font-size:14px;margin-bottom:12px; }
     .benefit h3 { font-size:14px; margin-bottom:6px; }
     .benefit p { font-size:13px; color:var(--text-secondary); line-height:1.6; }
+    .benefit .health{ margin-top:10px; padding:9px 10px; border-radius:10px; background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,255,136,0.03)); border:1px solid rgba(0,255,136,0.12); font-size:12px; color:var(--text-primary); line-height:1.5; }
+    .benefit .health span{ font-weight:800; color:var(--neon); font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; margin-right:4px; }
     .compare { grid-column: 1 / -1; margin-top: 18px; border-radius:20px; padding:22px; display:grid; grid-template-columns: 1fr 1.2fr; gap:22px; align-items:center; }
     .c-head h3 { font-size:16px; }
     .c-head p { font-size:13px;color:var(--text-secondary);margin-top:6px; }
@@ -463,12 +578,14 @@ import { ToastService } from '../../core/services/toast.service';
       .compare{ grid-template-columns: 1fr; }
       .carousel{ grid-template-columns: 1fr; }
       .hide-m { display:none; }
+      .other-btn{ font-size: 12px !important; padding:12px 16px !important; }
     }
     @media (max-width: 640px){
       .benefits{ grid-template-columns: 1fr; }
       .bar-row{ grid-template-columns: 110px 1fr 60px; }
       .hero-grid{ padding: 18px 16px 24px; min-height:auto; }
-      .bottle-stage{ height: 440px; }
+      .bottle-stage{ height: 560px; min-height: 560px; }
+      .obsidian-wrap{ transform: scale(0.96); }
     }
   `]
 })

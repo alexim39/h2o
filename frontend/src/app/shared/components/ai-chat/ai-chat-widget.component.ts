@@ -14,7 +14,7 @@ import { DeepseekService } from '../../../core/services/deepseek.service';
             <div class="avatar">H<sub>2</sub></div>
             <div class="meta">
               <strong>H2Os Assistant Doctor</strong>
-              <span>DeepSeek AI • Typically replies in seconds</span>
+              <span><!-- DeepSeek --> AI • Typically replies in seconds</span>
             </div>
             <div class="head-actions">
               <button class="icon" (click)="clear()" title="Clear">↺</button>
@@ -62,7 +62,7 @@ import { DeepseekService } from '../../../core/services/deepseek.service';
               WhatsApp +2348080386208
             </a>
           </div>
-          <span class="hint">H2Os Assistant Doctor • DeepSeek AI • Mock key — replace in .env for production</span>
+          <span class="hint">H2Os Assistant Doctor • Provides info, not medical advice; consult a doctor for medical concerns. <!-- DeepSeek AI • Mock key — replace in .env for production --></span>
         </div>
       }
       <button class="fab" (click)="toggle()" aria-label="Chat with H2Os Assistant Doctor">
@@ -115,7 +115,7 @@ import { DeepseekService } from '../../../core/services/deepseek.service';
     .send:disabled{ opacity:0.5; }
     .escalate{ display:flex; align-items:center; gap:8px; justify-content:space-between; padding:8px 12px; background: rgba(37,211,102,0.06); border-top:1px solid rgba(37,211,102,0.12); font-size:11px; color:var(--text-secondary); }
     .escalate .wa{ background:#25D366; color:white; padding:6px 10px; border-radius:999px; font-weight:700; font-size:11px; display:inline-flex; align-items:center; gap:6px; }
-    .hint{ display:block; text-align:center; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); padding:8px 0 10px; }
+    .hint{ display:block; text-align:center; font-size:8px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); padding:10px; }
     @media(max-width:420px){ .panel{ width:92vw; } }
   `]
 })

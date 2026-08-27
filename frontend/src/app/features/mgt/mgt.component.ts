@@ -7,8 +7,9 @@ import { AuthService } from '../../core/services/auth.service';
 import { Product } from '../../core/models/product.model';
 import { ToastService } from '../../core/services/toast.service';
 import { CartService } from '../../core/services/cart.service';
+import { DeepseekService } from '../../core/services/deepseek.service';
 
-type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media';
+type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
 
 @Component({
   selector: 'app-mgt',
@@ -228,6 +229,37 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media';
               <p class="hint">Upload via MGT Images/Videos fields — stored as data URLs (demo) or cPanel File Manager for production.</p>
             </div>
           }
+
+          @if (tab()==='chats') {
+            <div class="panel glass">
+              <h2>H2Os Assistant Doctor — All Chats</h2>
+              <p class="muted">Every conversation handled by DeepSeek AI. Review health queries, sales intent, and escalations to WhatsApp +2348080386208. {{ ai.messages().length }} messages stored (localStorage).</p>
+              <div class="toolbar">
+                <span class="muted">{{ ai.messages().length }} msgs • {{ chatUserCount() }} user • {{ chatAiCount() }} AI</span>
+                <div class="toolbar-actions">
+                  <a [href]="ai.whatsappLink()" target="_blank" class="btn-ghost sm">WhatsApp +2348080386208 →</a>
+                  <button class="btn-ghost sm danger" (click)="ai.clear(); toast.show('Chats cleared')">Clear All</button>
+                </div>
+              </div>
+              <div class="chat-list">
+                @for (m of ai.messages(); track $index) {
+                  <div class="chat-row" [class.user]="m.role==='user'" [class.assistant]="m.role==='assistant'">
+                    <div class="chat-head">
+                      <span class="role">{{ m.role === 'user' ? 'User' : 'Dr. H2Os' }}</span>
+                      <span class="time">{{ m.at.slice(0,19).replace('T',' ') }}</span>
+                    </div>
+                    <p class="chat-text">{{ m.content }}</p>
+                    @if (m.role==='assistant' && m.content.includes('WhatsApp')) {
+                      <a [href]="ai.whatsappLink(m.content)" target="_blank" class="btn-ghost sm">Escalate to WhatsApp →</a>
+                    }
+                  </div>
+                }
+                @if (ai.messages().length <=1) {
+                  <p class="muted">No chats yet — open the “Chat H2 Doctor” widget on the storefront (bottom-right) to start a conversation. All chats appear here for your review.</p>
+                }
+              </div>
+            </div>
+          }
         </div>
       </section>
     }
@@ -300,6 +332,15 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media';
     .media-card{ border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
     .media-card img, .media-card video{ width:100%; aspect-ratio: 16/9; object-fit:cover; background:#000; }
     .media-card span{ padding:8px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-muted); }
+    .chat-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; max-height: 58vh; overflow:auto; padding-right:4px; }
+    .chat-row{ padding:12px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:6px; }
+    .chat-row.user{ border-color: rgba(0,255,136,0.18); background: rgba(0,255,136,0.04); }
+    .chat-row.assistant{ border-color: rgba(99,102,241,0.14); }
+    .chat-head{ display:flex; justify-content:space-between; gap:8px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-muted); }
+    .chat-head .role{ font-weight:800; letter-spacing:0.08em; text-transform:uppercase; }
+    .chat-row.user .role{ color: var(--text-secondary); }
+    .chat-row.assistant .role{ color: var(--neon); }
+    .chat-text{ margin:6px 0; font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
     .pagination{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:11px; }
     @media(max-width: 900px){ .overview-grid{ grid-template-columns:1fr 1fr; } .overview-panels{ grid-template-columns:1fr; } .product-table .table-head, .product-table .row{ grid-template-columns: 48px 1fr; gap:6px; } .product-table .table-head span:nth-child(3), .product-table .table-head span:nth-child(4), .row div:nth-child(3), .row span:nth-child(4){ display:none; } .media-grid{ grid-template-columns:1fr 1fr; } }
     @media(max-width:560px){ .grid2{ grid-template-columns:1fr; } .media-grid{ grid-template-columns:1fr; } }
@@ -311,6 +352,9 @@ export class MgtComponent {
   review = inject(ReviewService);
   cart = inject(CartService);
   toast = inject(ToastService);
+  ai = inject(DeepseekService);
+  chatUserCount = computed(() => this.ai.messages().filter(m => m.role === 'user').length);
+  chatAiCount = computed(() => this.ai.messages().filter(m => m.role === 'assistant').length);
 
   tab = signal<Tab>('overview');
   tabs: {id: Tab, label: string}[] = [
@@ -319,6 +363,7 @@ export class MgtComponent {
     {id:'orders', label:'Orders'},
     {id:'reviews', label:'Reviews'},
     {id:'media', label:'Media'},
+    {id:'chats', label:'Chats'},
   ];
 
   user = '';

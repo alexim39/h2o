@@ -35,7 +35,13 @@ import { ShippingDetails } from '../../core/models/cart.model';
 
             <div class="row3">
               <div class="group"><label>City</label><input [(ngModel)]="shipping.city" name="city" required placeholder="Lagos" /></div>
-              <div class="group"><label>State</label><input [(ngModel)]="shipping.state" name="state" required placeholder="Lagos" /></div>
+              <div class="group">
+                <label>State</label>
+                <input list="ngStates" [(ngModel)]="shipping.state" name="state" required placeholder="Select State — e.g., Rivers, Lagos, Abuja" autocomplete="address-level1" />
+                <datalist id="ngStates">
+                  @for (s of nigeriaStates; track s) { <option [value]="s"></option> }
+                </datalist>
+              </div>
               <div class="group"><label>Country</label><input [(ngModel)]="shipping.country" name="country" required placeholder="Nigeria" /></div>
             </div>
 
@@ -47,7 +53,7 @@ import { ShippingDetails } from '../../core/models/cart.model';
               @if (loading()) { Processing… } @else { Pay {{ cart.formatNGN(cart.total()) }} with Paystack → }
             </button>
             <p class="secure">🔒 Paystack 256-bit • You’ll be redirected to Paystack secure page</p>
-            <a routerLink="/store" class="back">← Back to Configure</a>
+            <a routerLink="/store" class="back">← Back to Store</a>
           </form>
         </div>
 
@@ -57,7 +63,8 @@ import { ShippingDetails } from '../../core/models/cart.model';
             <h3>Order Summary</h3>
             @if (cart.isEmpty()) {
               <p class="muted">Your cart is empty.</p>
-              <a routerLink="/store" class="btn-ghost full">Configure Bottle</a>
+              <br />
+              <a routerLink="/store" class="btn-ghost full">Select Bottle</a>
             } @else {
               <div class="lines">
                 @for (l of cart.lines(); track l.variantId) {
@@ -136,6 +143,8 @@ export class CheckoutComponent {
 
   loading = signal(false);
   error = signal<string | null>(null);
+
+  nigeriaStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT - Abuja'];
 
   shipping: ShippingDetails = {
     fullName: '',

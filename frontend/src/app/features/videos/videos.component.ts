@@ -41,7 +41,7 @@ interface VideoItem {
         <div #grid class="grid">
           @for (v of filtered(); track v.id) {
             <article class="card glass" (click)="open(v)">
-              <div class="thumb">
+              <div class="thumb" [class.vertical]="isVertical(v)">
                 <video [src]="v.src" muted playsinline preload="metadata"></video>
                 <span class="play">▶</span>
                 <span class="cat" [class.howto]="v.category==='howto'">{{ v.badge }}</span>
@@ -79,66 +79,92 @@ interface VideoItem {
             </div>
             <button class="close" (click)="close()">×</button>
           </div>
-          <video [src]="vid.src" controls autoplay playsinline style="width:100%; border-radius:14px; background:#000;"></video>
+          <div class="video-wrap" [class.vertical]="isVertical(vid)">
+            <video [src]="vid.src" controls autoplay playsinline></video>
+          </div>
           <p class="modal-desc">{{ vid.desc }}</p>
           <div class="modal-actions">
-            <a routerLink="/store" class="btn-neon sm">Shop Ultra H₂</a>
-            <a routerLink="/reviews" class="btn-ghost sm">Community reviews</a>
+            <a routerLink="/store" class="btn-neon sm" (click)="close()">Shop Ultra H₂</a>
+            <a routerLink="/reviews" class="btn-ghost sm" (click)="close()">Community reviews</a>
           </div>
         </div>
       </div>
     }
   `,
   styles: [`
+    *{ box-sizing: border-box; }
     .head { text-align:center; max-width: 720px; margin: 0 auto 28px; }
     .head h1 { font-family:'Space Grotesk',sans-serif; font-size: clamp(28px,4vw,40px); letter-spacing:-0.02em; }
     .head h1 em { font-style:normal; color:var(--neon); }
     .head p { color:var(--text-secondary); font-size:14px; margin:10px 0 18px; }
-    .tabs { display:inline-flex; gap:8px; background: var(--bg-card); border:1px solid var(--border); padding:6px; border-radius:999px; }
-    .tabs button { padding:8px 14px; border-radius:999px; background:transparent; border:none; color:var(--text-secondary); font-weight:700; font-size:12px; display:flex; gap:6px; align-items:center; }
+    .tabs { display:inline-flex; gap:8px; background: var(--bg-card); border:1px solid var(--border); padding:6px; border-radius:999px; flex-wrap:wrap; justify-content:center; max-width:100%; }
+    .tabs button { padding:8px 14px; border-radius:999px; background:transparent; border:none; color:var(--text-secondary); font-weight:700; font-size:12px; display:flex; gap:6px; align-items:center; white-space:nowrap; }
     .tabs button.active { background: var(--neon); color:#050507; box-shadow: var(--neon-glow); }
     .tabs button span { background: rgba(0,0,0,0.08); border-radius:999px; padding:2px 6px; font-size:11px; }
     .tabs button.active span { background: rgba(0,0,0,0.14); color:#050507; }
-    .howto-cta { margin-top:14px; display:inline-flex; align-items:center; gap:10px; background: linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,255,136,0.03)); border:1px solid rgba(0,255,136,0.18); border-radius:999px; padding:8px 10px 8px 12px; font-size:12px; color:var(--text-secondary); flex-wrap:wrap; justify-content:center; }
+    .howto-cta { margin-top:14px; display:inline-flex; align-items:center; gap:10px; background: linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,255,136,0.03)); border:1px solid rgba(0,255,136,0.18); border-radius:999px; padding:8px 10px 8px 12px; font-size:12px; color:var(--text-secondary); flex-wrap:wrap; justify-content:center; text-align:center; max-width:100%; }
     .howto-cta strong { color:var(--text-primary); }
-    .pulse{ width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon);animation: pulse 1.6s infinite; }
+    .pulse{ width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon);animation: pulse 1.6s infinite; flex-shrink:0; }
     @keyframes pulse{ 0%,100%{opacity:1}50%{opacity:0.6} }
     .btn-neon.sm{ padding:8px 14px; font-size:12px; }
 
     .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-top:22px; }
-    .card { border-radius:18px; overflow:hidden; cursor:pointer; transition:.18s; display:flex; flex-direction:column; border:1px solid rgba(255,255,255,0.06); }
-    .card:hover { transform: translateY(-2px); border-color: rgba(0,255,136,0.22); box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
-    .thumb { position:relative; aspect-ratio: 16/9; background:#0B0D10; overflow:hidden; }
-    .thumb video { width:100%; height:100%; object-fit:cover; display:block; background:#000; }
-    .play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:48px;height:48px;border-radius:50%; background: rgba(5,5,7,0.78); border:1px solid rgba(255,255,255,0.14); backdrop-filter: blur(8px); display:grid; place-items:center; color:white; font-size:16px; }
-    .cat { position:absolute; left:10px; bottom:10px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; padding:5px 8px; border-radius:999px; background: rgba(5,5,7,0.82); border:1px solid rgba(255,255,255,0.10); color:var(--text-secondary); }
+    .card { border-radius:18px; overflow:hidden; cursor:pointer; transition:.18s; display:flex; flex-direction:column; border:1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); }
+    .card:hover { transform: translateY(-2px); border-color: rgba(0,255,136,0.22); box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,255,136,0.06); }
+    /* Desktop: vertical cards use contain so bottom not cropped */
+    .thumb { position:relative; background: radial-gradient(420px 220px at 50% 18%, rgba(0,255,136,0.07), transparent 68%), linear-gradient(180deg,#0B0D10 0%, #07080A 100%); overflow:hidden; display:grid; place-items:center; aspect-ratio: 16/9; }
+    .thumb.vertical{ aspect-ratio: 9/11; max-height: 240px; }
+    .thumb video { width:100%; height:100%; object-fit: contain; display:block; background: transparent; padding:0; }
+    .thumb.vertical video{ object-fit: contain; padding: 8px 0; }
+    .play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:48px;height:48px;border-radius:50%; background: rgba(5,5,7,0.78); border:1px solid rgba(255,255,255,0.14); backdrop-filter: blur(8px); display:grid; place-items:center; color:white; font-size:16px; box-shadow: 0 4px 16px rgba(0,0,0,0.32); }
+    .cat { position:absolute; left:10px; bottom:10px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; padding:5px 8px; border-radius:999px; background: rgba(5,5,7,0.82); border:1px solid rgba(255,255,255,0.10); color:var(--text-secondary); max-width: calc(100% - 20px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .cat.howto { background: rgba(0,255,136,0.18); border-color: rgba(0,255,136,0.24); color: var(--neon); }
     .body { padding:14px; flex:1; display:flex; flex-direction:column; gap:6px; }
     .body h3 { font-size:13px; line-height:1.4; }
     .body p { font-size:12px; color:var(--text-secondary); line-height:1.5; flex:1; }
     .meta { font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
-    .empty { text-align:center; color:var(--text-muted); padding:40px 0; }
+    .empty { text-align:center; color:var(--text-muted); padding:40px 0; grid-column: 1/-1; }
 
     .cta { margin-top:24px; border-radius:18px; padding:18px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
     .cta h3{ font-size:16px; }
     .cta p{ font-size:13px; color:var(--text-secondary); }
 
-    .overlay { position:fixed; inset:0; background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); z-index: 80; display:grid; place-items:center; padding:18px; }
-    .modal { width: min(840px, 96vw); border-radius:20px; padding:16px; max-height: 92vh; overflow:auto; }
-    .modal-head { display:flex; justify-content:space-between; gap:16px; align-items:start; margin-bottom:12px; }
-    .modal-head h3{ font-size:16px; }
-    .close{ width:32px;height:32px;border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-primary); font-size:20px; }
-    .modal-desc{ font-size:13px; color:var(--text-secondary); margin:12px 0; }
+    /* Premium modal — fixed centered, box-sizing, no horizontal overflow */
+    .overlay { position:fixed; inset:0; background: rgba(0,0,0,0.78); backdrop-filter: blur(10px); z-index: 80; display:flex; align-items:center; justify-content:center; padding:16px; overflow-y:auto; overflow-x:hidden; }
+    .modal { width:100%; max-width:860px; max-height: min(88vh, 860px); border-radius:20px; padding:16px; overflow:auto; display:flex; flex-direction:column; gap:12px; background: rgba(17,19,24,0.96); border:1px solid rgba(255,255,255,0.08); box-shadow: 0 24px 64px rgba(0,0,0,0.52), 0 0 0 1px rgba(255,255,255,0.04); box-sizing:border-box; margin:auto; }
+    .modal-head { display:flex; justify-content:space-between; gap:16px; align-items:start; }
+    .modal-head h3{ font-size:16px; line-height:1.3; }
+    .close{ width:36px;height:36px;border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-primary); font-size:20px; flex-shrink:0; }
+    .video-wrap{ position:relative; width:100%; background:#000; border-radius:14px; overflow:hidden; display:grid; place-items:center; min-height: 180px; }
+    .video-wrap video{ width:100%; height:auto; max-height: 62vh; object-fit: contain; display:block; background:#000; border-radius:14px; max-width:100%; }
+    .video-wrap.vertical video{ max-height: 66vh; }
+    .modal-desc{ font-size:13px; color:var(--text-secondary); line-height:1.6; }
     .modal-actions{ display:flex; gap:10px; flex-wrap:wrap; }
     .btn-ghost.sm{ padding:8px 14px; font-size:12px; }
 
-    @media(max-width: 960px){ .grid{ grid-template-columns: 1fr 1fr; } }
-    @media(max-width: 640px){ .grid{ grid-template-columns: 1fr; } .tabs{ flex-wrap:wrap; justify-content:center; } }
+    @media(max-width: 960px){ .grid{ grid-template-columns: 1fr 1fr; } .thumb{ aspect-ratio: 16/9; } .thumb.vertical{ aspect-ratio: 9/11; max-height: 220px; } }
+    @media(max-width: 640px){
+      .grid{ grid-template-columns: 1fr; }
+      .tabs{ width:100%; justify-content:center; }
+      .howto-cta{ border-radius:16px; padding:10px 12px; width:100%; }
+      .thumb{ aspect-ratio: 16/9; }
+      .thumb.vertical{ aspect-ratio: 9/11; max-height: 340px; }
+      .overlay{ top:112px; inset:112px 0 0 0; padding:24px 12px 16px; align-items:flex-start; justify-content:center; overflow-x:hidden; overflow-y:auto; }
+      .modal{ width: calc(100vw - 24px); max-width: calc(100vw - 24px); max-height: calc(100vh - 128px); padding:14px 12px 12px; border-radius:16px; margin:0 auto; box-sizing:border-box; left:0; right:0; transform:none; }
+      .modal-head{ padding-top:4px; }
+      .close{ width:38px; height:38px; font-size:22px; }
+      .video-wrap video{ max-height: 48vh; max-width:100%; }
+      .video-wrap.vertical video{ max-height: 54vh; }
+    }
   `]
 })
 export class VideosComponent {
   filter = signal<VideoCategory>('all');
   active = signal<VideoItem | null>(null);
+
+  isVertical(v: VideoItem): boolean {
+    return ['blister','brain','eye','diabites','reducing-inflamation-testimonial','sexual-performance-testimonial'].some(k => v.id.includes(k) || v.src.includes(k));
+  }
 
   videos: VideoItem[] = [
     { id:'howto1', src:'/videos/how-to-use-it.mp4', title:'How to use Ultra H₂ — Your 90-sec ritual', category:'howto', badge:'How to Use • 01:34', desc:'Unbox, charge via USB-C, fill with water, press once for 3 min (daily) or twice for 6 min (max). Watch the bubbles.' },

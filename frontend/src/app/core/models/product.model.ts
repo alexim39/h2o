@@ -34,7 +34,7 @@ export interface Product {
   reviewsCount?: number;
   variants: Variant[];
   specs: Spec[];
-  features: { title: string; desc: string; icon: string }[];
+  features: { title: string; desc: string; icon: string; health?: string }[];
   featured?: boolean;
 }
 
@@ -77,12 +77,12 @@ export const ULTRA_H2_PRODUCT: Product = {
     { label: 'Certification', value: 'CE, FCC, PSE, IP67' },
   ],
   features: [
-    { title: 'Antioxidant Boost', desc: 'Molecular hydrogen selectively neutralizes •OH radicals.', icon: '◈' },
-    { title: 'Cellular Recovery', desc: 'Accelerates post-workout recovery and mitochondrial efficiency.', icon: '⬢' },
-    { title: 'Cognitive Clarity', desc: 'Crosses blood-brain barrier. Sustained focus within days.', icon: '⬣' },
-    { title: 'Anti-Aging at the Source', desc: 'Supports telomere integrity and reduces oxidative stress.', icon: '⬔' },
-    { title: 'Gut & Metabolic Health', desc: 'Promotes microbiome balance and healthy metabolic markers.', icon: '⬕' },
-    { title: 'Ultra-Pure Hydration', desc: 'Every sip is freshly infused — no cartridges, no waste.', icon: '⬓' },
+    { title: 'Antioxidant Boost', desc: 'Molecular hydrogen selectively neutralizes •OH radicals.', icon: '◈', health: 'You feel: less daily fatigue, better resilience to stress and pollution.' },
+    { title: 'Cellular Recovery', desc: 'Accelerates post-workout recovery and mitochondrial efficiency.', icon: '⬢', health: 'You feel: faster bounce-back after exercise or long days on your feet.' },
+    { title: 'Cognitive Clarity', desc: 'Crosses blood-brain barrier. Sustained focus within days.', icon: '⬣', health: 'You feel: clearer focus, less brain fog, calmer mornings.' },
+    { title: 'Anti-Aging at the Source', desc: 'Supports telomere integrity and reduces oxidative stress.', icon: '⬔', health: 'You feel: more youthful energy, supports long-term cell health.' },
+    { title: 'Gut & Metabolic Health', desc: 'Promotes microbiome balance and healthy metabolic markers.', icon: '⬕', health: 'You feel: lighter stomach, steadier energy after meals.' },
+    { title: 'Ultra-Pure Hydration', desc: 'Every sip is freshly infused — no cartridges, no waste.', icon: '⬓', health: 'You feel: crisp, clean water that actually quenches and refreshes.' },
   ]
 };
 

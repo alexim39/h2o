@@ -6,6 +6,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
 use App\Services\PaystackService;
+use App\Services\EmailService;
 
 /**
  * Paystack — initialize, verify, webhook.
@@ -80,15 +81,20 @@ final class PaymentController
 
         $data = $this->paystack->verify($ref);
 
-        // If verified as success, mark order paid
+        // If verified as success, mark order paid + send premium emails (once)
         $status = strtolower($data['status'] ?? '');
         if (in_array($status, ['success','paid'], true)) {
+            $didUpdate = false;
             try {
+                $before = Database::fetchOne('SELECT status FROM orders WHERE reference = :ref LIMIT 1', ['ref'=>$ref]);
+                $wasPaid = $before && strtolower($before['status'] ?? '') === 'paid';
                 Database::execute(
                     "UPDATE orders SET status = 'paid', paystack_ref = :pr, updated_at = NOW() WHERE reference = :ref",
                     ['pr'=>$ref, 'ref'=>$ref]
                 );
+                $didUpdate = !$wasPaid;
             } catch (\Throwable) {}
+            if ($didUpdate) $this->sendPaidEmails($ref);
         }
 
         Response::success($data, 'Verification complete');
@@ -114,12 +120,15 @@ final class PaymentController
         if ($event === 'charge.success' && isset($data['reference'])) {
             $ref = preg_replace('/[^A-Za-z0-9_\-]/', '', (string)$data['reference']);
             $amount = (int)($data['amount'] ?? 0);
+            $didUpdate = false;
             try {
+                $before = Database::fetchOne('SELECT status FROM orders WHERE reference = :ref LIMIT 1', ['ref'=>$ref]);
+                $wasPaid = $before && strtolower($before['status'] ?? '') === 'paid';
                 Database::execute(
                     "UPDATE orders SET status = 'paid', paystack_ref = :pr, updated_at = NOW() WHERE reference = :ref",
                     ['pr'=>$ref, 'ref'=>$ref]
                 );
-                // Also log transaction
+                $didUpdate = !$wasPaid;
                 if (Database::connection() !== null) {
                     Database::execute(
                         'INSERT INTO paystack_transactions (reference, event, amount, raw_json, created_at) VALUES (:ref,:evt,:amt,:raw,NOW())
@@ -130,6 +139,7 @@ final class PaymentController
             } catch (\Throwable $e) {
                 error_log('[Webhook] DB update failed: ' . $e->getMessage());
             }
+            if ($didUpdate) $this->sendPaidEmails($ref);
         }
 
         // Always return 200 to Paystack
@@ -137,5 +147,31 @@ final class PaymentController
         header('Content-Type: application/json');
         echo json_encode(['status'=>true,'message'=>'Webhook received']);
         exit;
+    }
+
+    private function sendPaidEmails(string $ref): void
+    {
+        try {
+            $order = Database::fetchOne('SELECT * FROM orders WHERE reference = :ref LIMIT 1', ['ref'=>$ref]);
+            if (!$order) return;
+            $items = Database::fetchAll('SELECT variant_id, qty, price, sku FROM order_items WHERE order_id = :oid', ['oid'=>$order['id']]);
+            $payload = [
+                'reference' => $order['reference'],
+                'total' => (int)$order['total'],
+                'currency' => $order['currency'],
+                'trackingNumber' => $order['tracking_number'],
+                'createdAt' => $order['created_at'],
+                'items' => array_map(fn($r)=>['variantId'=>$r['variant_id'],'qty'=>(int)$r['qty'],'price'=>(int)$r['price'],'sku'=>$r['sku']], $items),
+                'shipping' => json_decode($order['shipping_json'] ?? '{}', true),
+            ];
+            $mailer = new EmailService();
+            $email = json_decode($order['shipping_json'] ?? '{}', true)['email'] ?? $order['email'];
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $mailer->sendUserConfirmation($payload, $email);
+            }
+            $mailer->sendAdminAlert($payload);
+        } catch (\Throwable $e) {
+            error_log('[Paid email] ' . $e->getMessage());
+        }
     }
 }

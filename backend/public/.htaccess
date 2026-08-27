@@ -1,34 +1,6 @@
-# HYDRO+ ELITE — API .htaccess (inside backend/public → exposed as public_html/api)
-# Requires mod_rewrite. Routes all requests to index.php (front controller).
-
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /api/
-
-  # If requested resource exists as file/dir, serve it (e.g. health check static)
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-
-  # Otherwise forward to front controller
-  RewriteRule ^ index.php [L,QSA]
-</IfModule>
-
-# Security headers (also set in PHP for non-Apache, but double here)
-<IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-  Header always set X-Frame-Options "DENY"
-  Header always set Referrer-Policy "strict-origin-when-cross-origin"
-  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
-</IfModule>
-
-# Deny access to sensitive files
-<FilesMatch "(\.env|\.git|composer\.(json|lock))">
-  Require all denied
-</FilesMatch>
-
-# PHP hardening
-php_flag display_errors Off
-php_value error_log "/home/user/logs/hydro-api-error.log"
-
-# CORS is handled in PHP (allowlist). Do not set wildcard here.
+RewriteEngine On
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^ index.php [L,QSA]

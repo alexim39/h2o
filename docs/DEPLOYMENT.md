@@ -94,7 +94,7 @@ DB_DATABASE=user_hydrogen_store
 DB_USERNAME=user_hydro_user
 DB_PASSWORD=YOUR_STRONG_PASSWORD
 
-PAYSTACK_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxxxxxxx
+PAYSTACK_SECRET_KEY=sk_live_REPLACE_WITH_REAL_KEY_VIA_ENV
 PAYSTACK_PUBLIC_KEY=pk_live_xxxxxxxxxxxxxxxxxxxxx
 CORS_ALLOWED_ORIGINS=https://hydrogenwaterbottles.store,https://www.hydrogenwaterbottles.store
 ```

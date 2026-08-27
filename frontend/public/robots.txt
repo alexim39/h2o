@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /store
+Allow: /store/
+Allow: /videos
+Allow: /reviews
+Allow: /images/
+Allow: /videos/
+
+Disallow: /mgt
+Disallow: /admin
+Disallow: /api/
+Disallow: /checkout
+Disallow: /confirmation/
+
+Sitemap: https://hydrogenwaterbottles.store/sitemap.xml

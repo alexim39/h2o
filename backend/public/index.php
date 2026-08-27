@@ -26,12 +26,11 @@ Config::load($backendRoot);
 if (is_file($backendRoot . '/vendor/autoload.php')) {
     require_once $backendRoot . '/vendor/autoload.php';
 } else {
-    spl_autoload_register(function (string $class): void {
-        // App\ => backend/src/
+   spl_autoload_register(function (string $class): void {
+        global $backendRoot;
         if (!str_starts_with($class, 'App\\')) return;
-        $rel = substr($class, 4); // strip App\
-        $rel = str_replace('\\', DIRECTORY_SEPARATOR, $rel);
-        $file = $backendRoot . '/src/' . $rel . '.php';
+        $rel = substr($class, 4);
+        $file = $backendRoot . '/src/' . str_replace('\\', '/', $rel) . '.php';
         if (is_file($file)) require_once $file;
     });
     // Also load Config class already required

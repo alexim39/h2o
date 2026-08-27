@@ -35,6 +35,11 @@ export const routes: Routes = [
     redirectTo: 'store/:id'
   },
   {
+    path: 'science',
+    loadComponent: () => import('./features/science/science.component').then(m => m.ScienceComponent),
+    title: 'Science — Hydrogen Water Health Benefits | H2Os'
+  },
+  {
     path: 'videos',
     loadComponent: () => import('./features/videos/videos.component').then(m => m.VideosComponent),
     title: 'Videos — How to Use & Testimonials | H2Os Ultra H₂'

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Database;
+use App\Services\EmailService;
 
 /**
  * Orders — stateless CRUD. Uses prepared statements, input sanitization,
@@ -99,11 +100,40 @@ final class OrderController
         } catch (\Throwable $e) {
             try { Database::rollBack(); } catch (\Throwable) {}
             error_log('[OrderController::store] DB error: ' . $e->getMessage());
-            // Continue with mock response — don't fail the checkout
+            Response::error('Order failed — please try again. ' . (Config::get('APP_DEBUG') ? $e->getMessage() : ''), 500);
+            return;
+        }
+        if ($orderId === null) {
+            Response::error('Order failed — database unavailable', 500);
+            return;
+        }
+
+        // ─── Premium email — user confirmation + admin alert (non-blocking) ───
+        $orderPayload = [
+            'reference' => $ref,
+            'total' => $total,
+            'currency' => 'NGN',
+            'trackingNumber' => $tracking,
+            'createdAt' => date('c'),
+            'items' => $cleanItems,
+            'shipping' => $cleanShipping,
+        ];
+        try {
+            $mailer = new EmailService();
+            // User — only if real email and DB persisted (not mock random)
+            if ($orderId !== null && filter_var($cleanShipping['email'], FILTER_VALIDATE_EMAIL)) {
+                $mailer->sendUserConfirmation($orderPayload, $cleanShipping['email']);
+            }
+            // Admin — always when orderId exists (real DB)
+            if ($orderId !== null) {
+                $mailer->sendAdminAlert($orderPayload);
+            }
+        } catch (\Throwable $e) {
+            error_log('[Order email] ' . $e->getMessage());
         }
 
         Response::success([
-            'id' => $orderId ?? random_int(1000,9999),
+            'id' => $orderId,
             'reference' => $ref,
             'trackingNumber' => $tracking,
             'total' => $total,
@@ -145,19 +175,7 @@ final class OrderController
             error_log('[OrderController::show] DB error: ' . $e->getMessage());
         }
 
-        // Mock fallback — synthesize order if not found in DB (for demo / mock Paystack refs) — free shipping
-        Response::success([
-            'id' => 9999,
-            'reference' => $ref,
-            'email' => 'customer@hydrogenwaterbottles.store',
-            'total' => 1300000,
-            'currency' => 'NGN',
-            'status' => 'paid',
-            'trackingNumber' => 'HY-' . strtoupper(substr(md5($ref),0,8)),
-            'shipping' => [],
-            'items' => [],
-            'createdAt' => date('c'),
-        ]);
+        Response::error('Order not found', 404);
     }
 
     /** GET /orders — admin/listing (paginated, optional email filter) */
