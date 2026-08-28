@@ -720,17 +720,29 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
     const rand = (a:number,b:number)=> a + Math.random()*(b-a);
 
+    // DRAMATIC 1600 ppb TORRENT — dense, fast, turbulent like lab-verified peak concentration
     const init = () => {
       bubbles = [];
-      const bg = isMobile ? 10 : 16;
-      const mid = isMobile ? 14 : 22;
-      const fg = isMobile ? 8 : 12;
-      for (let i=0;i<bg;i++) bubbles.push({ x:rand(w*0.05,w*0.95), y:rand(h*0.2,h*1.1), r:rand(0.7,1.35), speed:rand(0.09,0.18), drift:rand(-0.12,0.12), phase:rand(0,Math.PI*2), alpha:rand(0.08,0.18), depth:0 });
-      for (let i=0;i<mid;i++) bubbles.push({ x:rand(w*0.08,w*0.92), y:rand(h*0.25,h*1.08), r:rand(1.1,2.0), speed:rand(0.16,0.32), drift:rand(-0.18,0.18), phase:rand(0,Math.PI*2), alpha:rand(0.16,0.34), depth:1 });
-      for (let i=0;i<fg;i++) bubbles.push({ x:rand(w*0.1,w*0.9), y:rand(h*0.3,h*1.06), r:rand(1.7,2.7), speed:rand(0.22,0.42), drift:rand(-0.22,0.22), phase:rand(0,Math.PI*2), alpha:rand(0.22,0.42), depth:2 });
+      const bg = isMobile ? 18 : 28;
+      const mid = isMobile ? 26 : 42;
+      const fg = isMobile ? 16 : 26;
+      // bg — soft depth, slightly larger now for torrent haze
+      for (let i=0;i<bg;i++) bubbles.push({ x:rand(w*0.04,w*0.96), y:rand(h*0.15,h*1.12), r:rand(0.9,1.9), speed:rand(0.18,0.34), drift:rand(-0.22,0.22), phase:rand(0,Math.PI*2), alpha:rand(0.10,0.20), depth:0 });
+      // mid — main torrent column: 65% clustered centre 32-68%
+      for (let i=0;i<mid;i++) {
+        const inColumn = Math.random() < 0.65;
+        const x = inColumn ? rand(w*0.32, w*0.68) : rand(w*0.06,w*0.94);
+        bubbles.push({ x, y:rand(h*0.18,h*1.10), r:rand(1.4,3.1), speed:rand(0.32,0.68), drift:rand(-0.32,0.32), phase:rand(0,Math.PI*2), alpha:rand(0.20,0.42), depth:1 });
+      }
+      // fg — pearl torrent, fastest, brightest, turbulent
+      for (let i=0;i<fg;i++) {
+        const inColumn = Math.random() < 0.72;
+        const x = inColumn ? rand(w*0.36, w*0.64) : rand(w*0.08,w*0.92);
+        bubbles.push({ x, y:rand(h*0.22,h*1.08), r:rand(2.2,4.2), speed:rand(0.48,0.92), drift:rand(-0.38,0.38), phase:rand(0,Math.PI*2), alpha:rand(0.28,0.52), depth:2 });
+      }
       orbs = [];
-      const orbCount = isMobile ? 3 : 6;
-      for (let i=0;i<orbCount;i++) orbs.push({ x:rand(w*0.15,w*0.85), y:rand(h*0.15,h*0.85), r:rand(14, 28), alpha:rand(0.025,0.055), phase:rand(0,Math.PI*2), speed:rand(0.0006,0.0014) });
+      const orbCount = isMobile ? 5 : 9;
+      for (let i=0;i<orbCount;i++) orbs.push({ x:rand(w*0.12,w*0.88), y:rand(h*0.12,h*0.88), r:rand(16, 34), alpha:rand(0.028,0.068), phase:rand(0,Math.PI*2), speed:rand(0.0009,0.0019) });
     };
 
     const resize = () => {
@@ -756,25 +768,33 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
       if (document.hidden) return;
       ctx.clearRect(0,0,w,h);
 
-      // cinematic depth wash — ultra premium, not flat
-      const g = ctx.createRadialGradient(w*0.62, h*0.5, 0, w*0.62, h*0.5, Math.max(w,h)*0.78);
-      g.addColorStop(0, 'rgba(8,12,14,0)');
-      g.addColorStop(0.55, 'rgba(0,232,200,0.018)');
-      g.addColorStop(0.82, 'rgba(0,255,136,0.028)');
-      g.addColorStop(1, 'rgba(5,5,7,0.55)');
+      // cinematic depth wash — torrent stronger, central column glow
+      const g = ctx.createRadialGradient(w*0.52, h*0.52, 0, w*0.52, h*0.52, Math.max(w,h)*0.82);
+      g.addColorStop(0, 'rgba(0,255,136,0.045)');
+      g.addColorStop(0.38, 'rgba(0,232,200,0.032)');
+      g.addColorStop(0.62, 'rgba(8,12,14,0)');
+      g.addColorStop(1, 'rgba(5,5,7,0.58)');
       ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
 
-      // slow caustic drift — like video light through water
+      // torrent column beam — like looking up through active hydrogen column
       ctx.save();
-      ctx.globalAlpha = 0.045 + Math.sin(tick*0.18)*0.008;
-      const c1x = w*0.28 + Math.sin(tick*0.07)*18;
-      const c1 = ctx.createRadialGradient(c1x, h*0.32, 0, c1x, h*0.32, 280);
-      c1.addColorStop(0,'rgba(0,255,136,0.14)'); c1.addColorStop(1,'rgba(0,255,136,0)');
-      ctx.fillStyle = c1; ctx.beginPath(); ctx.arc(c1x, h*0.32, 280, 0, Math.PI*2); ctx.fill();
-      const c2x = w*0.74 + Math.cos(tick*0.06)*14;
-      const c2 = ctx.createRadialGradient(c2x, h*0.68, 0, c2x, h*0.68, 360);
-      c2.addColorStop(0,'rgba(0,232,200,0.10)'); c2.addColorStop(1,'rgba(0,232,200,0)');
-      ctx.fillStyle = c2; ctx.beginPath(); ctx.arc(c2x, h*0.68, 360, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.092;
+      const lgCol = ctx.createLinearGradient(w*0.34, 0, w*0.66, 0);
+      lgCol.addColorStop(0,'rgba(0,255,136,0)'); lgCol.addColorStop(0.22,'rgba(0,255,136,0.04)'); lgCol.addColorStop(0.5,'rgba(0,232,200,0.07)'); lgCol.addColorStop(0.78,'rgba(0,255,136,0.04)'); lgCol.addColorStop(1,'rgba(0,255,136,0)');
+      ctx.fillStyle = lgCol; ctx.fillRect(w*0.34, 0, w*0.32, h);
+      ctx.restore();
+
+      // caustics — faster, brighter for torrent
+      ctx.save();
+      ctx.globalAlpha = 0.072 + Math.sin(tick*0.26)*0.012;
+      const c1x = w*0.28 + Math.sin(tick*0.11)*22;
+      const c1 = ctx.createRadialGradient(c1x, h*0.28, 0, c1x, h*0.28, 320);
+      c1.addColorStop(0,'rgba(0,255,136,0.18)'); c1.addColorStop(1,'rgba(0,255,136,0)');
+      ctx.fillStyle = c1; ctx.beginPath(); ctx.arc(c1x, h*0.28, 320, 0, Math.PI*2); ctx.fill();
+      const c2x = w*0.74 + Math.cos(tick*0.09)*18;
+      const c2 = ctx.createRadialGradient(c2x, h*0.72, 0, c2x, h*0.72, 420);
+      c2.addColorStop(0,'rgba(0,232,200,0.14)'); c2.addColorStop(1,'rgba(0,232,200,0)');
+      ctx.fillStyle = c2; ctx.beginPath(); ctx.arc(c2x, h*0.72, 420, 0, Math.PI*2); ctx.fill();
       ctx.restore();
 
       // bokeh orbs — background video depth
@@ -791,24 +811,33 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
         ctx.beginPath(); ctx.arc(ox, oy, o.r*pulse, 0, Math.PI*2); ctx.fill();
       }
 
-      // vertical lab beam — subtle anamorphic
+      // anamorphic streaks — dual for torrent intensity
       ctx.save();
-      ctx.globalAlpha = 0.038;
-      const lg = ctx.createLinearGradient(w*0.525, 0, w*0.575, 0);
-      lg.addColorStop(0,'rgba(255,255,255,0)'); lg.addColorStop(0.5,'rgba(255,255,255,0.42)'); lg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.globalAlpha = 0.052;
+      let lg = ctx.createLinearGradient(w*0.525, 0, w*0.575, 0);
+      lg.addColorStop(0,'rgba(255,255,255,0)'); lg.addColorStop(0.5,'rgba(255,255,255,0.52)'); lg.addColorStop(1,'rgba(255,255,255,0)');
       ctx.fillStyle = lg; ctx.fillRect(w*0.525, h*0.06, w*0.05, h*0.82);
+      ctx.globalAlpha = 0.028;
+      lg = ctx.createLinearGradient(w*0.46, 0, w*0.50, 0);
+      lg.addColorStop(0,'rgba(255,255,255,0)'); lg.addColorStop(0.5,'rgba(255,255,255,0.28)'); lg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle = lg; ctx.fillRect(w*0.46, h*0.12, w*0.04, h*0.74);
       ctx.restore();
 
       for (const b of bubbles){
-        b.y -= b.speed * (b.depth===0?0.85:b.depth===2?1.08:1);
-        b.x += Math.sin(tick*(0.18 + b.depth*0.04) + b.phase)* (0.06 + b.depth*0.04) + b.drift*0.045;
-        b.phase += 0.005 + b.depth*0.0015;
-        if (b.y < -18){ b.y = h + rand(10,32); b.x = rand(w*0.08,w*0.92); }
-        const depthFade = b.depth===0 ? 0.7 : b.depth===1 ? 1 : 1.08;
-        const shimmer = 0.92 + Math.sin(tick*0.85 + b.phase)*0.08;
-        const edgeFade = (b.y < h*0.16 ? b.y/(h*0.16) : 1) * (b.y > h*0.90 ? 1 - (b.y - h*0.90)/(h*0.18) : 1);
+        // torrent turbulence — speed jitter + stronger wobble
+        const turb = 1 + Math.sin(tick*0.42 + b.phase)*0.12;
+        b.y -= b.speed * (b.depth===0?0.85:b.depth===2?1.14:1) * turb;
+        b.x += Math.sin(tick*(0.28 + b.depth*0.06) + b.phase)* (0.11 + b.depth*0.07) + b.drift*0.085 + Math.cos(b.y*0.018)*0.12;
+        b.phase += 0.008 + b.depth*0.002;
+        if (b.y < -22){
+          const inCol = Math.random() < (b.depth===2?0.72: b.depth===1?0.65:0.45);
+          b.y = h + rand(8,28);
+          b.x = inCol ? rand(w*0.34, w*0.66) : rand(w*0.06,w*0.94);
+        }
+        const depthFade = b.depth===0 ? 0.78 : b.depth===1 ? 1 : 1.12;
+        const shimmer = 0.90 + Math.sin(tick*1.15 + b.phase)*0.10;
+        const edgeFade = (b.y < h*0.14 ? b.y/(h*0.14) : 1) * (b.y > h*0.92 ? 1 - (b.y - h*0.92)/(h*0.14) : 1);
         const a = Math.max(0, Math.min(1, b.alpha * shimmer * edgeFade * depthFade));
-        const blurExtra = b.depth===0 ? 0.8 : 0;
 
         if (b.depth===0){
           ctx.save(); ctx.globalAlpha = a*0.9; ctx.filter = 'blur(0.7px)';
@@ -848,13 +877,17 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     let raf: number | null = null;
     const rand = (a:number,b:number)=> a + Math.random()*(b-a);
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const count = isMobile ? 32 : 42;
+    const count = isMobile ? 58 : 78; // torrent — almost double
 
     const init = () => {
       bubbles = [];
       for (let i=0;i<count;i++){
-        const r = rand(0.55, 2.1) * (Math.random()<0.10 ? 1.9 : 1);
-        bubbles.push({ x:rand(w*0.14,w*0.86), y:rand(h*0.18,h*1.05), r, speed:rand(0.42, 0.92) * (r>1.8?1.12:1), drift:rand(-0.32,0.32), phase:rand(0,Math.PI*2), alpha:rand(0.52,0.92) });
+        const isPearl = Math.random() < 0.16;
+        const r = rand(0.65, 2.4) * (isPearl ? 1.85 : 1);
+        // 70% clustered centre column for torrent jet
+        const inColumn = Math.random() < 0.70;
+        const x = inColumn ? rand(w*0.26, w*0.74) : rand(w*0.12,w*0.88);
+        bubbles.push({ x, y:rand(h*0.12,h*1.08), r, speed:rand(0.58, 1.32) * (r>2.2?1.18:1), drift:rand(-0.42,0.42), phase:rand(0,Math.PI*2), alpha:rand(0.58,0.96) });
       }
     };
 
@@ -877,12 +910,17 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
       if (document.hidden) return;
       ctx.clearRect(0,0,w,h);
 
-      // electrode micro-fizz base — video-like dense nucleation
+      // electrode torrent fizz — violent nucleation like 1600 ppb peak
       ctx.save();
-      ctx.globalAlpha = 0.22 + Math.sin(tick*1.6)*0.06;
-      const eg = ctx.createRadialGradient(w*0.5, h*0.98, 0, w*0.5, h*0.98, w*0.42);
-      eg.addColorStop(0,'rgba(0,232,200,0.26)'); eg.addColorStop(0.52,'rgba(0,232,200,0.10)'); eg.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle = eg; ctx.fillRect(0, h*0.78, w, h*0.22);
+      ctx.globalAlpha = 0.32 + Math.sin(tick*2.1)*0.09;
+      const eg = ctx.createRadialGradient(w*0.5, h*0.98, 0, w*0.5, h*0.98, w*0.48);
+      eg.addColorStop(0,'rgba(0,255,136,0.32)'); eg.addColorStop(0.28,'rgba(0,232,200,0.22)'); eg.addColorStop(0.55,'rgba(0,232,200,0.10)'); eg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle = eg; ctx.fillRect(0, h*0.72, w, h*0.28);
+      // shimmering electrode line
+      ctx.globalAlpha = 0.92;
+      const egLine = ctx.createLinearGradient(0, h*0.98, 0, h*0.96);
+      egLine.addColorStop(0,'rgba(0,255,136,0)'); egLine.addColorStop(0.5,'rgba(0,255,136,0.85)'); egLine.addColorStop(1,'rgba(0,232,200,0)');
+      ctx.fillStyle = egLine; ctx.fillRect(w*0.12, h*0.96, w*0.76, 2);
       ctx.restore();
 
       // subtle water caustic inside bottle
@@ -894,19 +932,20 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
       ctx.restore();
 
       for (const b of bubbles){
-        b.y -= b.speed;
-        b.x += Math.sin(tick*0.45 + b.phase)*0.22 + b.drift*0.07 + Math.sin(b.y*0.015)*0.06;
-        b.phase += 0.012;
-        // slight growth as rises (pressure)
-        const grow = 1 + (1 - b.y/h)*0.14;
+        const turb = 1 + Math.sin(tick*0.92 + b.phase)*0.18 + Math.cos(b.y*0.022)*0.08;
+        b.y -= b.speed * turb;
+        b.x += Math.sin(tick*0.62 + b.phase)*0.32 + b.drift*0.11 + Math.sin(b.y*0.018 + b.phase)*0.14;
+        b.phase += 0.016;
+        const grow = 1 + (1 - b.y/h)*0.18;
         const rNow = b.r * grow;
-        if (b.y < -10){
-          b.y = h + rand(4,16);
-          b.x = rand(w*0.16, w*0.84);
-          b.alpha = rand(0.55,0.92);
+        if (b.y < -12){
+          const inCol = Math.random() < 0.70;
+          b.y = h + rand(3,12);
+          b.x = inCol ? rand(w*0.26, w*0.74) : rand(w*0.12,w*0.88);
+          b.alpha = rand(0.58,0.96);
         }
-        const fadeTop = b.y < h*0.12 ? b.y/(h*0.12) : 1;
-        const a = b.alpha * fadeTop * (0.94 + Math.sin(tick*1.2 + b.phase)*0.06);
+        const fadeTop = b.y < h*0.10 ? b.y/(h*0.10) : 1;
+        const a = b.alpha * fadeTop * (0.92 + Math.sin(tick*1.45 + b.phase)*0.08);
         // trail
         ctx.beginPath(); ctx.arc(b.x, b.y + rNow*0.55, rNow*1.7, 0, Math.PI*2);
         ctx.fillStyle = `rgba(0,232,200,${a*0.09})`; ctx.fill();
