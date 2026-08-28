@@ -77,19 +77,36 @@ import { ToastService } from '../../core/services/toast.service';
                   <span class="rim right"></span>
                   <div class="body-highlight"></div>
                   <div class="body-watermark">H2Os</div>
-                  <div class="obsidian-bubbles">
-                    <span style="--x:22%; --d:2.8s; --s:2.2px; --delay:0s"></span>
-                    <span style="--x:34%; --d:3.2s; --s:1.8px; --delay:0.4s"></span>
-                    <span style="--x:48%; --d:2.6s; --s:2.6px; --delay:0.2s"></span>
-                    <span style="--x:62%; --d:3.0s; --s:2.0px; --delay:0.7s"></span>
-                    <span style="--x:74%; --d:2.9s; --s:1.6px; --delay:0.1s"></span>
-                    <span style="--x:28%; --d:3.4s; --s:1.4px; --delay:0.9s"></span>
-                    <span style="--x:52%; --d:3.1s; --s:2.4px; --delay:0.5s"></span>
-                    <span style="--x:66%; --d:2.7s; --s:1.9px; --delay:0.3s"></span>
-                    <span style="--x:38%; --d:3.6s; --s:1.5px; --delay:0.8s"></span>
-                    <span style="--x:58%; --d:2.5s; --s:2.1px; --delay:1.0s"></span>
-                    <span style="--x:44%; --d:3.3s; --s:1.7px; --delay:0.6s"></span>
-                    <span style="--x:78%; --d:2.4s; --s:1.9px; --delay:1.2s"></span>
+                  <div class="obsidian-bubbles active">
+                    <!-- nucleation: dense micro + mid + occasional pearl — real active electrolysis -->
+                    <span style="--x:18%; --d:2.2s; --s:1.4px; --delay:0s"></span>
+                    <span style="--x:24%; --d:2.6s; --s:1.8px; --delay:0.15s"></span>
+                    <span style="--x:31%; --d:2.0s; --s:2.6px; --delay:0.32s"></span>
+                    <span style="--x:37%; --d:2.9s; --s:1.6px; --delay:0.08s"></span>
+                    <span style="--x:44%; --d:1.9s; --s:2.1px; --delay:0.48s"></span>
+                    <span style="--x:49%; --d:2.4s; --s:3.2px; --delay:0.22s"></span>
+                    <span style="--x:54%; --d:2.1s; --s:1.5px; --delay:0.6s"></span>
+                    <span style="--x:61%; --d:2.7s; --s:2.4px; --delay:0.12s"></span>
+                    <span style="--x:68%; --d:2.3s; --s:1.9px; --delay:0.38s"></span>
+                    <span style="--x:74%; --d:2.0s; --s:1.3px; --delay:0.55s"></span>
+                    <span style="--x:79%; --d:2.8s; --s:2.0px; --delay:0.18s"></span>
+                    <span style="--x:21%; --d:2.5s; --s:2.0px; --delay:0.72s"></span>
+                    <span style="--x:28%; --d:1.8s; --s:1.2px; --delay:0.42s"></span>
+                    <span style="--x:34%; --d:3.1s; --s:1.7px; --delay:0.88s"></span>
+                    <span style="--x:42%; --d:2.2s; --s:2.8px; --delay:0.28s"></span>
+                    <span style="--x:47%; --d:2.6s; --s:1.4px; --delay:0.65s"></span>
+                    <span style="--x:52%; --d:1.95s; --s:2.2px; --delay:0.04s"></span>
+                    <span style="--x:58%; --d:2.85s; --s:1.6px; --delay:0.52s"></span>
+                    <span style="--x:64%; --d:2.15s; --s:3.0px; --delay:0.3s"></span>
+                    <span style="--x:71%; --d:2.45s; --s:1.8px; --delay:0.78s"></span>
+                    <span style="--x:26%; --d:2.3s; --s:2.3px; --delay:0.92s"></span>
+                    <span style="--x:39%; --d:1.85s; --s:1.3px; --delay:0.18s"></span>
+                    <span style="--x:46%; --d:2.75s; --s:1.9px; --delay:0.44s"></span>
+                    <span style="--x:56%; --d:2.05s; --s:1.2px; --delay:0.82s"></span>
+                    <span style="--x:62%; --d:3.0s; --s:1.5px; --delay:0.1s"></span>
+                    <span style="--x:77%; --d:2.35s; --s:2.1px; --delay:0.58s"></span>
+                    <span style="--x:32%; --d:2.4s; --s:2.5px; --delay:0.36s"></span>
+                    <span style="--x:51%; --d:1.75s; --s:1.6px; --delay:0.68s"></span>
                   </div>
                 </div>
                 <div class="obsidian-base">
@@ -440,20 +457,44 @@ import { ToastService } from '../../core/services/toast.service';
       pointer-events:none; user-select:none; white-space:nowrap;
     }
     .obsidian-bubbles{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .obsidian-bubbles::before{
+      content:""; position:absolute; left:6%; right:6%; bottom:0; height:22px;
+      background: radial-gradient(ellipse at center, rgba(0,232,200,0.18), transparent 72%);
+      filter: blur(2px); opacity:0.9; pointer-events:none;
+    }
+    .obsidian-bubbles::after{
+      content:""; position:absolute; left:12%; right:12%; bottom:0; height:1px;
+      background: linear-gradient(90deg, transparent, rgba(0,232,200,0.45), transparent);
+      box-shadow: 0 0 8px rgba(0,232,200,0.45); opacity:0.9;
+    }
     .obsidian-bubbles span{
-      position:absolute; bottom:-12px; width:var(--s); height:var(--s); left:var(--x);
-      background: radial-gradient(circle at 32% 28%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.94) 18%, rgba(210,255,240,0.78) 34%, rgba(0,232,200,0.62) 58%, rgba(0,160,130,0.32) 100%);
-      border-radius:50%; box-shadow: 0 0 7px rgba(0,232,200,0.48), inset 0 1px 1px rgba(255,255,255,0.96), inset 0 -1px 1px rgba(0,0,0,0.12);
+      position:absolute; bottom:-14px; width:var(--s); height:var(--s); left:var(--x);
+      background: radial-gradient(circle at 30% 26%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 14%, rgba(230,255,245,0.88) 28%, rgba(180,255,235,0.62) 42%, rgba(0,232,200,0.58) 62%, rgba(0,145,115,0.28) 78%, rgba(0,90,75,0.0) 100%);
+      border-radius:50%;
+      border: 0.6px solid rgba(255,255,255,0.62);
+      box-shadow: 0 0 8px rgba(0,232,200,0.52), 0 0 14px rgba(0,232,200,0.18), inset 0 1px 1.2px rgba(255,255,255,1), inset 0 -0.8px 1px rgba(0,40,30,0.18), inset 0 0 4px rgba(255,255,255,0.42);
       animation: riseReal var(--d) linear infinite; animation-delay: var(--delay); opacity:0;
+      will-change: transform, opacity;
+    }
+    /* pearl large — more translucent, stronger highlight */
+    .obsidian-bubbles span[style*="--s:3"] , .obsidian-bubbles span[style*="--s:2.8"], .obsidian-bubbles span[style*="--s:3.2"]{
+      box-shadow: 0 0 10px rgba(0,232,200,0.62), 0 0 18px rgba(0,232,200,0.22), inset 0 1.4px 1.4px rgba(255,255,255,1), inset 0 -1px 1.2px rgba(0,0,0,0.12);
+      border-color: rgba(255,255,255,0.72);
     }
     @keyframes riseReal{
-      0%{ transform: translateY(0) translateX(0) scale(0.68); opacity:0; }
-      6%{ opacity:0.98; }
-      82%{ opacity:0.94; }
-      100%{ transform: translateY(-272px) translateX(var(--drift, 0px)) scale(1.06); opacity:0; }
+      0%{ transform: translateY(0) translateX(0) scale(0.52); opacity:0; filter: blur(0.3px); }
+      4%{ opacity:1; filter: blur(0); }
+      18%{ transform: translateY(-48px) translateX(calc(var(--drift, 0px) * 0.35)) scale(0.86); }
+      42%{ transform: translateY(-122px) translateX(calc(var(--drift, 0px) * -0.6)) scale(0.97); }
+      68%{ transform: translateY(-188px) translateX(calc(var(--drift, 0px) * 0.9)) scale(1.02); opacity:0.96; }
+      86%{ opacity:0.92; }
+      100%{ transform: translateY(-286px) translateX(var(--drift, 0px)) scale(1.14); opacity:0; filter: blur(0.2px); }
     }
-    .obsidian-bubbles span:nth-child(odd){ --drift: 1.2px; } .obsidian-bubbles span:nth-child(even){ --drift: -1px; }
-    .obsidian-bubbles span:nth-child(3n){ filter: brightness(1.08); }
+    .obsidian-bubbles span:nth-child(odd){ --drift: 1.4px; }
+    .obsidian-bubbles span:nth-child(even){ --drift: -1.3px; }
+    .obsidian-bubbles span:nth-child(3n){ --drift: 0.9px; }
+    .obsidian-bubbles span:nth-child(5n){ --drift: -0.7px; filter: brightness(1.12) saturate(1.08); }
+    .obsidian-bubbles span:nth-child(4n+1){ animation-timing-function: cubic-bezier(0.22, 0.6, 0.35, 1); }
     .obsidian-base{
       width:152px; height:32px;
       background: linear-gradient(180deg,#4A4F58 0%, #2E333C 26%, #1C1F26 78%, #121417 100%);
