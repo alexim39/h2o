@@ -1,5 +1,6 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, AfterViewInit, OnDestroy, ViewChild, ElementRef, PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -9,8 +10,10 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [RouterLink],
   template: `
-    <!-- HERO — H2Os Ultra H₂ with real product image -->
+    <!-- HERO — H2Os Ultra H₂ with subtle lab micro-bubble canvas -->
     <section class="hero">
+      <canvas #heroCanvas class="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-glow" aria-hidden="true"></div>
       <div class="container hero-grid">
         <div class="copy">
           <div class="health-hero glass">
@@ -307,8 +310,15 @@ import { ToastService } from '../../core/services/toast.service';
     </section>
   `,
   styles: [`
-    .hero { padding: 28px 0 0; border-bottom: 1px solid var(--border); }
-    .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; min-height: 640px; padding: 36px 24px 40px; }
+    .hero { position:relative; overflow:hidden; padding: 28px 0 0; border-bottom: 1px solid var(--border); isolation:isolate; }
+    .hero-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; opacity:0.95; }
+    .hero-glow{ position:absolute; inset:0; pointer-events:none; z-index:0; background:
+      radial-gradient(680px 520px at 68% 52%, rgba(0,255,136,0.06), transparent 62%),
+      radial-gradient(520px 420px at 18% 18%, rgba(0,232,200,0.05), transparent 68%),
+      linear-gradient(180deg, rgba(7,8,10,0.0) 0%, rgba(5,5,7,0.12) 100%);
+    }
+    @media (prefers-reduced-motion: reduce){ .hero-canvas{ display:none; } }
+    .hero-grid { position:relative; z-index:1; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; min-height: 640px; padding: 36px 24px 40px; }
     .health-hero{ margin-bottom: 14px; padding: 14px 16px; border-radius: 16px; border:1px solid rgba(0,255,136,0.14); background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,255,136,0.02)); position:relative; overflow:hidden; }
     .health-hero::before{ content:""; position:absolute; left:-20%; top:-40%; width:60%; height:180%; background: radial-gradient(ellipse at center, rgba(0,255,136,0.10), transparent 68%); pointer-events:none; }
     .health-eyebrow{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--neon); display:flex; align-items:center; gap:8px; }
@@ -586,21 +596,173 @@ import { ToastService } from '../../core/services/toast.service';
       .hero-grid{ padding: 18px 16px 24px; min-height:auto; }
       .bottle-stage{ height: 560px; min-height: 560px; }
       .obsidian-wrap{ transform: scale(0.96); }
+      .hero-canvas{ opacity:0.55; }
     }
   `]
 })
-export class LandingComponent {
+export class LandingComponent implements AfterViewInit, OnDestroy {
   product = inject(ProductService);
   cart = inject(CartService);
   private toast = inject(ToastService);
+  private platformId = inject(PLATFORM_ID);
 
   selected = computed(() => this.product.selectedVariant());
+
+  @ViewChild('heroCanvas', { static: false }) heroCanvas?: ElementRef<HTMLCanvasElement>;
+  private rafId: number | null = null;
+  private resizeHandler = () => this.resizeCanvas();
+  private visible = true;
 
   reviews = [
     { name: 'Amara O.', initials: 'AO', role: 'Founder, Lagos', text: 'Three minutes and my water is literally sparkling with hydrogen. Recovery after Lagos traffic + gym is unreal. Ultra H₂ is stealth luxury on my desk.' },
     { name: 'Daniel K.', initials: 'DK', role: 'Triathlete', text: 'I track HRV daily — Ultra H₂ moved my recovery score 18% in two weeks. No placebo. The SPE membrane is legit.' },
     { name: 'Sofia M.', initials: 'SM', role: 'Designer, London', text: 'Finally a health device that is not ugly. Ultra H₂ lives next to my MacBook and people always ask. Hydration, upgraded indeed.' },
   ];
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // defer to avoid blocking LCP
+    requestAnimationFrame(() => setTimeout(() => this.initHeroCanvas(), 220));
+  }
+
+  ngOnDestroy(): void {
+    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+    window.removeEventListener('resize', this.resizeHandler);
+    const io = (this as any)._io as IntersectionObserver | undefined;
+    if (io) io.disconnect();
+  }
+
+  private initHeroCanvas(): void {
+    const canvas = this.heroCanvas?.nativeElement;
+    if (!canvas) return;
+    const parent = canvas.parentElement as HTMLElement | null;
+    if (!parent) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.8);
+    let w = 0, h = 0;
+
+    type Bubble = { x:number; y:number; r:number; speed:number; drift:number; phase:number; alpha:number; life:number; maxLife:number; };
+    let bubbles: Bubble[] = [];
+    let tick = 0;
+
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    const count = isMobile ? 22 : 38;
+
+    const rand = (a:number,b:number)=> a + Math.random()*(b-a);
+
+    const initBubbles = () => {
+      bubbles = [];
+      for (let i=0;i<count;i++){
+        const r = rand(0.6, 1.9) * (Math.random()<0.12 ? 1.7 : 1);
+        bubbles.push({
+          x: rand(w*0.08, w*0.92),
+          y: rand(h*0.35, h*1.08),
+          r,
+          speed: rand(0.14, 0.42) * (r < 1.1 ? 0.85 : 1),
+          drift: rand(-0.18, 0.18),
+          phase: rand(0, Math.PI*2),
+          alpha: rand(0.14, 0.42),
+          life: rand(0, 1),
+          maxLife: rand(0.9, 1.4),
+        });
+      }
+    };
+
+    const resize = () => {
+      const rect = parent.getBoundingClientRect();
+      w = rect.width; h = rect.height;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      initBubbles();
+    };
+
+    this.resizeCanvas = resize;
+    resize();
+    window.addEventListener('resize', this.resizeHandler, { passive: true });
+
+    // pause when hero off-screen
+    const io = new IntersectionObserver((entries)=>{
+      this.visible = entries[0]?.isIntersecting ?? true;
+      if (this.visible && this.rafId===null) loop();
+    }, { threshold: 0.02 });
+    io.observe(parent);
+    // store to disconnect later
+    (this as any)._io = io;
+
+    const loop = () => {
+      if (!this.visible) { this.rafId = null; return; }
+      this.rafId = requestAnimationFrame(loop);
+      tick += 0.016;
+      if (document.hidden) return;
+      ctx.clearRect(0,0,w,h);
+
+      // subtle lab volumetric wash — ultra low opacity so text stays readable
+      const g = ctx.createRadialGradient(w*0.68, h*0.54, 0, w*0.68, h*0.54, Math.max(w,h)*0.72);
+      g.addColorStop(0, 'rgba(0,255,136,0.035)');
+      g.addColorStop(0.55, 'rgba(0,232,200,0.018)');
+      g.addColorStop(1, 'rgba(5,5,7,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,w,h);
+
+      // faint vertical light column like lab tube illumination
+      ctx.save();
+      ctx.globalAlpha = 0.055;
+      const lg = ctx.createLinearGradient(w*0.52, 0, w*0.56, 0);
+      lg.addColorStop(0, 'rgba(255,255,255,0)');
+      lg.addColorStop(0.5, 'rgba(255,255,255,0.55)');
+      lg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = lg;
+      ctx.fillRect(w*0.51, h*0.08, w*0.06, h*0.78);
+      ctx.restore();
+
+      for (const b of bubbles){
+        b.y -= b.speed;
+        b.x += Math.sin(tick*0.22 + b.phase) * 0.09 + b.drift*0.06;
+        b.phase += 0.006;
+        // recycle when out of view — fade in from bottom
+        if (b.y < -14){
+          b.y = h + rand(8, 28);
+          b.x = rand(w*0.1, w*0.9);
+          b.alpha = rand(0.14, 0.38);
+        }
+        // subtle life shimmer
+        const shimmer = 0.92 + Math.sin(tick*0.9 + b.phase)*0.08;
+        const a = Math.max(0, Math.min(1, b.alpha * shimmer * (b.y < h*0.18 ? (b.y/(h*0.18)) : 1) * (b.y > h*0.88 ? 1 - (b.y - h*0.88)/(h*0.22) : 1)));
+
+        // outer soft halo
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r*2.2, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,232,200,${a*0.07})`;
+        ctx.fill();
+
+        // core bubble — pearlescent micro
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+        const rg = ctx.createRadialGradient(b.x - b.r*0.28, b.y - b.r*0.32, 0, b.x, b.y, b.r);
+        rg.addColorStop(0, `rgba(255,255,255,${a})`);
+        rg.addColorStop(0.28, `rgba(230,255,248,${a*0.92})`);
+        rg.addColorStop(0.62, `rgba(0,232,200,${a*0.52})`);
+        rg.addColorStop(1, `rgba(0,160,132,${a*0.22})`);
+        ctx.fillStyle = rg;
+        ctx.fill();
+
+        // specular highlight
+        ctx.beginPath();
+        ctx.arc(b.x - b.r*0.22, b.y - b.r*0.26, b.r*0.34, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${a*0.92})`;
+        ctx.fill();
+      }
+    };
+    loop();
+  }
+
+  private resizeCanvas(): void {}
 
   addToCart() {
     this.cart.add(this.selected().id, 1);
