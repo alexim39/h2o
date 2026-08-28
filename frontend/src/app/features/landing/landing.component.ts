@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, AfterViewInit, OnDestroy, ViewChild, ElementRef, PLATFORM_ID } from '@angular/core';
+import { Component, inject, computed, AfterViewInit, OnDestroy, ViewChild, ElementRef, PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { ProductService } from '../../core/services/product.service';
@@ -10,9 +10,14 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [RouterLink],
   template: `
-    <!-- HERO — H2Os Ultra H₂ with subtle lab micro-bubble canvas -->
+    <!-- HERO — Cinematic Hydrogen Lab Video Simulation -->
     <section class="hero">
       <canvas #heroCanvas class="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-video-overlay" aria-hidden="true">
+        <div class="vignette"></div>
+        <div class="grain"></div>
+        <div class="caustic"></div>
+      </div>
       <div class="hero-glow" aria-hidden="true"></div>
       <div class="container hero-grid">
         <div class="copy">
@@ -44,8 +49,8 @@ import { ToastService } from '../../core/services/toast.service';
             </a>
           </div>
           <div class="other-products">
-            <a routerLink="/store" class="btn-ghost other-btn">See Other Products — From ₦40,000 upward <!-- <span>→</span> --></a>
-            <span class="free-ship">✓ Free shipping on all orders <!-- • Also from ₦40k --></span>
+            <a routerLink="/store" class="btn-ghost other-btn">See Other Products — From ₦40,000 upward</a>
+            <span class="free-ship">✓ Free shipping on all orders</span>
           </div>
 
           <div class="trust">
@@ -64,7 +69,8 @@ import { ToastService } from '../../core/services/toast.service';
         <div class="visual">
           <div class="bottle-stage">
             <div class="glow"></div>
-            <!-- H2Os Obsidian Ultra — photoreal matte, brushed steel, H2Os 1.2ppm, bottom-rising bubbles -->
+            <div class="stage-vignette" aria-hidden="true"></div>
+            <!-- Obsidian Ultra — premium video-sim bottle -->
             <div class="obsidian-wrap">
               <div class="obsidian-mock">
                 <div class="obsidian-cap"></div>
@@ -73,12 +79,13 @@ import { ToastService } from '../../core/services/toast.service';
                   <span class="ppm"><small>H2</small><strong>1.2</strong><small>ppm</small></span>
                 </div>
                 <div class="obsidian-body">
+                  <canvas #bottleCanvas class="bottle-canvas" aria-hidden="true"></canvas>
                   <span class="rim left"></span>
                   <span class="rim right"></span>
                   <div class="body-highlight"></div>
                   <div class="body-watermark">H2Os</div>
+                  <div class="electrode-glow" aria-hidden="true"></div>
                   <div class="obsidian-bubbles active">
-                    <!-- nucleation: dense micro + mid + occasional pearl — real active electrolysis -->
                     <span style="--x:18%; --d:2.2s; --s:1.4px; --delay:0s"></span>
                     <span style="--x:24%; --d:2.6s; --s:1.8px; --delay:0.15s"></span>
                     <span style="--x:31%; --d:2.0s; --s:2.6px; --delay:0.32s"></span>
@@ -141,7 +148,7 @@ import { ToastService } from '../../core/services/toast.service';
       </div>
     </section>
 
-    <!-- VIDEO PREVIEW — premium teaser -->
+    <!-- VIDEO PREVIEW -->
     <section class="section video-preview">
       <div class="container">
         <div class="section-head">
@@ -224,7 +231,7 @@ import { ToastService } from '../../core/services/toast.service';
       </div>
     </section>
 
-    <!-- GALLERY — real image -->
+    <!-- GALLERY -->
     <section class="section gallery-sec">
       <div class="container">
         <div class="gallery-grid">
@@ -327,16 +334,25 @@ import { ToastService } from '../../core/services/toast.service';
     </section>
   `,
   styles: [`
-    .hero { position:relative; overflow:hidden; padding: 28px 0 0; border-bottom: 1px solid var(--border); isolation:isolate; }
-    .hero-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; opacity:0.95; }
+    .hero { position:relative; overflow:hidden; padding: 28px 0 0; border-bottom: 1px solid var(--border); isolation:isolate; background: #050507; }
+    .hero-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; opacity:1; }
+    .hero-video-overlay{ position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .hero-video-overlay .vignette{ position:absolute; inset:0; background: radial-gradient(820px 620px at 52% 48%, transparent 42%, rgba(0,0,0,0.42) 88%), linear-gradient(180deg, rgba(5,5,7,0.08) 0%, rgba(5,5,7,0.38) 100%); }
+    .hero-video-overlay .grain{ position:absolute; inset:-10%; opacity:0.035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
+    .hero-video-overlay .caustic{ position:absolute; inset:0; opacity:0.18; background:
+      radial-gradient(420px 320px at 18% 22%, rgba(0,255,136,0.10), transparent 62%),
+      radial-gradient(560px 420px at 78% 68%, rgba(0,232,200,0.08), transparent 68%),
+      radial-gradient(360px 260px at 52% 88%, rgba(255,215,0,0.04), transparent 72%);
+      filter: blur(0.5px); animation: causticDrift 18s ease-in-out infinite alternate; }
+    @keyframes causticDrift{ 0%{ transform: translate(0,0) scale(1); } 100%{ transform: translate(-14px, 10px) scale(1.04); } }
     .hero-glow{ position:absolute; inset:0; pointer-events:none; z-index:0; background:
-      radial-gradient(680px 520px at 68% 52%, rgba(0,255,136,0.06), transparent 62%),
-      radial-gradient(520px 420px at 18% 18%, rgba(0,232,200,0.05), transparent 68%),
-      linear-gradient(180deg, rgba(7,8,10,0.0) 0%, rgba(5,5,7,0.12) 100%);
+      radial-gradient(680px 520px at 68% 52%, rgba(0,255,136,0.05), transparent 62%),
+      linear-gradient(180deg, rgba(7,8,10,0.0) 0%, rgba(5,5,7,0.18) 100%);
     }
-    @media (prefers-reduced-motion: reduce){ .hero-canvas{ display:none; } }
+    @media (prefers-reduced-motion: reduce){ .hero-canvas, .hero-video-overlay .caustic{ display:none; } }
     .hero-grid { position:relative; z-index:1; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; min-height: 640px; padding: 36px 24px 40px; }
-    .health-hero{ margin-bottom: 14px; padding: 14px 16px; border-radius: 16px; border:1px solid rgba(0,255,136,0.14); background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,255,136,0.02)); position:relative; overflow:hidden; }
+
+    .health-hero{ margin-bottom: 14px; padding: 14px 16px; border-radius: 16px; border:1px solid rgba(0,255,136,0.14); background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,255,136,0.02)); position:relative; overflow:hidden; backdrop-filter: blur(8px); }
     .health-hero::before{ content:""; position:absolute; left:-20%; top:-40%; width:60%; height:180%; background: radial-gradient(ellipse at center, rgba(0,255,136,0.10), transparent 68%); pointer-events:none; }
     .health-eyebrow{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--neon); display:flex; align-items:center; gap:8px; }
     .health-eyebrow::before{ content:"◆"; color:var(--neon); font-size:8px; }
@@ -393,9 +409,11 @@ import { ToastService } from '../../core/services/toast.service';
     .micro div span { font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
 
     .visual { position: relative; }
-    .bottle-stage { position: relative; background: radial-gradient(420px 320px at 50% 38%, rgba(0,255,136,0.10), transparent 70%), linear-gradient(180deg, #0F1115 0%, #07080A 100%); border:1px solid var(--border); border-radius: 28px; height: 540px; display:grid; place-items:center; overflow:hidden; padding: 18px; }
-    .glow { position:absolute; inset:auto 18% 14% 18%; height: 120px; background: radial-gradient(ellipse at center, rgba(0,255,136,0.22), transparent 70%); filter: blur(18px); }
-    /* Obsidian Real — photoreal matte, brushed steel, H2Os band, bottom→top bubbles, reflection */
+    .bottle-stage { position: relative; background: radial-gradient(420px 320px at 50% 38%, rgba(0,255,136,0.09), transparent 70%), radial-gradient(420px 280px at 50% 92%, rgba(0,232,200,0.07), transparent 72%), linear-gradient(180deg, #0F1115 0%, #07080A 100%); border:1px solid var(--border); border-radius: 28px; height: 540px; display:grid; place-items:center; overflow:hidden; padding: 18px; }
+    .bottle-stage::before{ content:""; position:absolute; inset:0; background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 18%, transparent 82%, rgba(0,0,0,0.18) 100%); pointer-events:none; }
+    .stage-vignette{ position:absolute; inset:0; pointer-events:none; background: radial-gradient(620px 420px at 50% 50%, transparent 58%, rgba(0,0,0,0.28) 100%); }
+    .glow { position:absolute; inset:auto 18% 14% 18%; height: 120px; background: radial-gradient(ellipse at center, rgba(0,255,136,0.18), transparent 70%); filter: blur(18px); }
+
     .obsidian-wrap{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; filter: drop-shadow(0 32px 56px rgba(0,0,0,0.68)) drop-shadow(0 0 32px rgba(0,200,160,0.09)); }
     .obsidian-mock{
       width:168px; height: 412px; display:flex; flex-direction:column; align-items:center; position:relative;
@@ -445,21 +463,24 @@ import { ToastService } from '../../core/services/toast.service';
       position:relative; overflow:hidden; border-radius: 0;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -16px 28px rgba(0,0,0,0.46);
     }
-    .obsidian-body::before{ content:""; position:absolute; left:50%; top:22%; width:1px; height:52%; background: linear-gradient(180deg, transparent, rgba(255,215,0,0.08), transparent); transform:translateX(-50%); }
-    .obsidian-body .rim{ position:absolute; top:0; bottom:0; width:1px; background: linear-gradient(180deg, transparent, rgba(0,232,200,0.32) 14%, rgba(0,232,200,0.58) 36%, rgba(0,232,200,0.24) 72%, transparent); filter: blur(0.5px); opacity:0.92; }
+    .bottle-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:2; }
+    .obsidian-body::before{ content:""; position:absolute; left:50%; top:22%; width:1px; height:52%; background: linear-gradient(180deg, transparent, rgba(255,215,0,0.08), transparent); transform:translateX(-50%); z-index:1; }
+    .obsidian-body .rim{ position:absolute; top:0; bottom:0; width:1px; background: linear-gradient(180deg, transparent, rgba(0,232,200,0.32) 14%, rgba(0,232,200,0.58) 36%, rgba(0,232,200,0.24) 72%, transparent); filter: blur(0.5px); opacity:0.92; z-index:3; }
     .obsidian-body .rim.left{ left:0; } .obsidian-body .rim.right{ right:0; }
-    .body-highlight{ position:absolute; left:9%; top:0; bottom:0; width:12%; background: linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 28%, transparent 68%); filter: blur(0.7px); pointer-events:none; }
+    .body-highlight{ position:absolute; left:9%; top:0; bottom:0; width:12%; background: linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 28%, transparent 68%); filter: blur(0.7px); pointer-events:none; z-index:4; }
     .body-highlight::after{ content:""; position:absolute; left:42%; top:0; bottom:0; width:18%; background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 56%); }
     .body-watermark{
       position:absolute; left:50%; top:50%; transform: translate(-50%,-52%) rotate(-90deg);
       font-family:'Space Grotesk',sans-serif; font-size:38px; font-weight:800; letter-spacing:0.14em;
       color: rgba(255,255,255,0.042); text-shadow: 0 1px 0 rgba(255,255,255,0.05);
-      pointer-events:none; user-select:none; white-space:nowrap;
+      pointer-events:none; user-select:none; white-space:nowrap; z-index:1;
     }
-    .obsidian-bubbles{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .electrode-glow{ position:absolute; left:8%; right:8%; bottom:0; height:18px; background: radial-gradient(ellipse at center, rgba(0,232,200,0.22), transparent 72%); filter: blur(2px); opacity:0.9; z-index:1; animation: electrodePulse 2.1s ease-in-out infinite alternate; }
+    @keyframes electrodePulse{ 0%{ opacity:0.72; } 100%{ opacity:1; } }
+    .obsidian-bubbles{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:3; }
     .obsidian-bubbles::before{
       content:""; position:absolute; left:6%; right:6%; bottom:0; height:22px;
-      background: radial-gradient(ellipse at center, rgba(0,232,200,0.18), transparent 72%);
+      background: radial-gradient(ellipse at center, rgba(0,232,200,0.16), transparent 72%);
       filter: blur(2px); opacity:0.9; pointer-events:none;
     }
     .obsidian-bubbles::after{
@@ -476,7 +497,6 @@ import { ToastService } from '../../core/services/toast.service';
       animation: riseReal var(--d) linear infinite; animation-delay: var(--delay); opacity:0;
       will-change: transform, opacity;
     }
-    /* pearl large — more translucent, stronger highlight */
     .obsidian-bubbles span[style*="--s:3"] , .obsidian-bubbles span[style*="--s:2.8"], .obsidian-bubbles span[style*="--s:3.2"]{
       box-shadow: 0 0 10px rgba(0,232,200,0.62), 0 0 18px rgba(0,232,200,0.22), inset 0 1.4px 1.4px rgba(255,255,255,1), inset 0 -1px 1.2px rgba(0,0,0,0.12);
       border-color: rgba(255,255,255,0.72);
@@ -509,7 +529,9 @@ import { ToastService } from '../../core/services/toast.service';
       border:1px solid rgba(0,232,200,0.18);
       display:grid; place-items:center; cursor:pointer;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 0 10px rgba(0,232,200,0.16), 0 2px 8px rgba(0,0,0,0.42);
+      animation: powerPulse 2.2s ease-in-out infinite alternate;
     }
+    @keyframes powerPulse{ 0%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 0 8px rgba(0,232,200,0.14); } 100%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 0 14px rgba(0,232,200,0.32), 0 0 22px rgba(0,232,200,0.14); } }
     .base-power span{ width:8px; height:8px; border:1.6px solid #00E8C8; border-radius:50%; position:relative; box-shadow:0 0 7px rgba(0,232,200,0.62); display:block; }
     .base-power span::after{ content:""; position:absolute; left:50%; top:1.5px; width:1.4px; height:5px; background:#00E8C8; transform:translateX(-50%); border-radius:999px; box-shadow:0 0 5px #00E8C8; }
     .obsidian-reflection{
@@ -526,6 +548,7 @@ import { ToastService } from '../../core/services/toast.service';
       .obsidian-band .brand{ font-size:9px; }
       .obsidian-band .ppm strong{ font-size:9px; }
       .bottle-stage{ height: 480px; }
+      .hero-video-overlay .grain{ opacity:0.022; }
     }
     .float-card{ position:absolute; right:14px; bottom:14px; background: rgba(11,13,16,0.92); border:1px solid var(--border); border-radius:16px; padding:12px 14px; min-width:170px; backdrop-filter: blur(12px); z-index:2; }
     .float-card strong{ display:block; font-size:12px; margin: 2px 0 6px; }
@@ -637,7 +660,7 @@ import { ToastService } from '../../core/services/toast.service';
       .hero-grid{ padding: 18px 16px 24px; min-height:auto; }
       .bottle-stage{ height: 560px; min-height: 560px; }
       .obsidian-wrap{ transform: scale(0.96); }
-      .hero-canvas{ opacity:0.55; }
+      .hero-canvas{ opacity:0.92; }
     }
   `]
 })
@@ -650,8 +673,10 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
   selected = computed(() => this.product.selectedVariant());
 
   @ViewChild('heroCanvas', { static: false }) heroCanvas?: ElementRef<HTMLCanvasElement>;
-  private rafId: number | null = null;
-  private resizeHandler = () => this.resizeCanvas();
+  @ViewChild('bottleCanvas', { static: false }) bottleCanvas?: ElementRef<HTMLCanvasElement>;
+  private rafHero: number | null = null;
+  private rafBottle: number | null = null;
+  private resizeHandler = () => { this.resizeHero(); this.resizeBottle(); };
   private visible = true;
 
   reviews = [
@@ -663,16 +688,19 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // defer to avoid blocking LCP
-    requestAnimationFrame(() => setTimeout(() => this.initHeroCanvas(), 220));
+    requestAnimationFrame(() => setTimeout(() => { this.initHeroCanvas(); this.initBottleCanvas(); }, 220));
   }
 
   ngOnDestroy(): void {
-    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+    if (this.rafHero !== null) cancelAnimationFrame(this.rafHero);
+    if (this.rafBottle !== null) cancelAnimationFrame(this.rafBottle);
     window.removeEventListener('resize', this.resizeHandler);
     const io = (this as any)._io as IntersectionObserver | undefined;
     if (io) io.disconnect();
   }
+
+  private resizeHero(): void {}
+  private resizeBottle(): void {}
 
   private initHeroCanvas(): void {
     const canvas = this.heroCanvas?.nativeElement;
@@ -682,34 +710,27 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.8);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.7);
     let w = 0, h = 0;
-
-    type Bubble = { x:number; y:number; r:number; speed:number; drift:number; phase:number; alpha:number; life:number; maxLife:number; };
-    let bubbles: Bubble[] = [];
+    type B = { x:number; y:number; r:number; speed:number; drift:number; phase:number; alpha:number; depth:0|1|2; };
+    type Orb = { x:number; y:number; r:number; alpha:number; phase:number; speed:number; };
+    let bubbles: B[] = [];
+    let orbs: Orb[] = [];
     let tick = 0;
-
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const count = isMobile ? 22 : 38;
-
     const rand = (a:number,b:number)=> a + Math.random()*(b-a);
 
-    const initBubbles = () => {
+    const init = () => {
       bubbles = [];
-      for (let i=0;i<count;i++){
-        const r = rand(0.6, 1.9) * (Math.random()<0.12 ? 1.7 : 1);
-        bubbles.push({
-          x: rand(w*0.08, w*0.92),
-          y: rand(h*0.35, h*1.08),
-          r,
-          speed: rand(0.14, 0.42) * (r < 1.1 ? 0.85 : 1),
-          drift: rand(-0.18, 0.18),
-          phase: rand(0, Math.PI*2),
-          alpha: rand(0.14, 0.42),
-          life: rand(0, 1),
-          maxLife: rand(0.9, 1.4),
-        });
-      }
+      const bg = isMobile ? 10 : 16;
+      const mid = isMobile ? 14 : 22;
+      const fg = isMobile ? 8 : 12;
+      for (let i=0;i<bg;i++) bubbles.push({ x:rand(w*0.05,w*0.95), y:rand(h*0.2,h*1.1), r:rand(0.7,1.35), speed:rand(0.09,0.18), drift:rand(-0.12,0.12), phase:rand(0,Math.PI*2), alpha:rand(0.08,0.18), depth:0 });
+      for (let i=0;i<mid;i++) bubbles.push({ x:rand(w*0.08,w*0.92), y:rand(h*0.25,h*1.08), r:rand(1.1,2.0), speed:rand(0.16,0.32), drift:rand(-0.18,0.18), phase:rand(0,Math.PI*2), alpha:rand(0.16,0.34), depth:1 });
+      for (let i=0;i<fg;i++) bubbles.push({ x:rand(w*0.1,w*0.9), y:rand(h*0.3,h*1.06), r:rand(1.7,2.7), speed:rand(0.22,0.42), drift:rand(-0.22,0.22), phase:rand(0,Math.PI*2), alpha:rand(0.22,0.42), depth:2 });
+      orbs = [];
+      const orbCount = isMobile ? 3 : 6;
+      for (let i=0;i<orbCount;i++) orbs.push({ x:rand(w*0.15,w*0.85), y:rand(h*0.15,h*0.85), r:rand(14, 28), alpha:rand(0.025,0.055), phase:rand(0,Math.PI*2), speed:rand(0.0006,0.0014) });
     };
 
     const resize = () => {
@@ -720,90 +741,195 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
       ctx.setTransform(dpr,0,0,dpr,0,0);
-      initBubbles();
+      init();
     };
-
-    this.resizeCanvas = resize;
+    this.resizeHero = resize;
     resize();
     window.addEventListener('resize', this.resizeHandler, { passive: true });
-
-    // pause when hero off-screen
-    const io = new IntersectionObserver((entries)=>{
-      this.visible = entries[0]?.isIntersecting ?? true;
-      if (this.visible && this.rafId===null) loop();
-    }, { threshold: 0.02 });
-    io.observe(parent);
-    // store to disconnect later
-    (this as any)._io = io;
+    const io = new IntersectionObserver((entries)=>{ this.visible = entries[0]?.isIntersecting ?? true; if (this.visible && this.rafHero===null) loop(); }, { threshold: 0.02 });
+    io.observe(parent); (this as any)._io = io;
 
     const loop = () => {
-      if (!this.visible) { this.rafId = null; return; }
-      this.rafId = requestAnimationFrame(loop);
+      if (!this.visible) { this.rafHero = null; return; }
+      this.rafHero = requestAnimationFrame(loop);
       tick += 0.016;
       if (document.hidden) return;
       ctx.clearRect(0,0,w,h);
 
-      // subtle lab volumetric wash — ultra low opacity so text stays readable
-      const g = ctx.createRadialGradient(w*0.68, h*0.54, 0, w*0.68, h*0.54, Math.max(w,h)*0.72);
-      g.addColorStop(0, 'rgba(0,255,136,0.035)');
+      // cinematic depth wash — ultra premium, not flat
+      const g = ctx.createRadialGradient(w*0.62, h*0.5, 0, w*0.62, h*0.5, Math.max(w,h)*0.78);
+      g.addColorStop(0, 'rgba(8,12,14,0)');
       g.addColorStop(0.55, 'rgba(0,232,200,0.018)');
-      g.addColorStop(1, 'rgba(5,5,7,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,w,h);
+      g.addColorStop(0.82, 'rgba(0,255,136,0.028)');
+      g.addColorStop(1, 'rgba(5,5,7,0.55)');
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
 
-      // faint vertical light column like lab tube illumination
+      // slow caustic drift — like video light through water
       ctx.save();
-      ctx.globalAlpha = 0.055;
-      const lg = ctx.createLinearGradient(w*0.52, 0, w*0.56, 0);
-      lg.addColorStop(0, 'rgba(255,255,255,0)');
-      lg.addColorStop(0.5, 'rgba(255,255,255,0.55)');
-      lg.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = lg;
-      ctx.fillRect(w*0.51, h*0.08, w*0.06, h*0.78);
+      ctx.globalAlpha = 0.045 + Math.sin(tick*0.18)*0.008;
+      const c1x = w*0.28 + Math.sin(tick*0.07)*18;
+      const c1 = ctx.createRadialGradient(c1x, h*0.32, 0, c1x, h*0.32, 280);
+      c1.addColorStop(0,'rgba(0,255,136,0.14)'); c1.addColorStop(1,'rgba(0,255,136,0)');
+      ctx.fillStyle = c1; ctx.beginPath(); ctx.arc(c1x, h*0.32, 280, 0, Math.PI*2); ctx.fill();
+      const c2x = w*0.74 + Math.cos(tick*0.06)*14;
+      const c2 = ctx.createRadialGradient(c2x, h*0.68, 0, c2x, h*0.68, 360);
+      c2.addColorStop(0,'rgba(0,232,200,0.10)'); c2.addColorStop(1,'rgba(0,232,200,0)');
+      ctx.fillStyle = c2; ctx.beginPath(); ctx.arc(c2x, h*0.68, 360, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+
+      // bokeh orbs — background video depth
+      for (const o of orbs){
+        o.phase += o.speed;
+        const ox = o.x + Math.sin(o.phase)*10;
+        const oy = o.y + Math.cos(o.phase*0.7)*7;
+        const pulse = 0.9 + Math.sin(tick*0.5 + o.phase)*0.12;
+        const grad = ctx.createRadialGradient(ox, oy, 0, ox, oy, o.r*pulse);
+        grad.addColorStop(0, `rgba(0,255,136,${o.alpha*0.9})`);
+        grad.addColorStop(0.4, `rgba(0,232,200,${o.alpha*0.5})`);
+        grad.addColorStop(1, `rgba(0,0,0,0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(ox, oy, o.r*pulse, 0, Math.PI*2); ctx.fill();
+      }
+
+      // vertical lab beam — subtle anamorphic
+      ctx.save();
+      ctx.globalAlpha = 0.038;
+      const lg = ctx.createLinearGradient(w*0.525, 0, w*0.575, 0);
+      lg.addColorStop(0,'rgba(255,255,255,0)'); lg.addColorStop(0.5,'rgba(255,255,255,0.42)'); lg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle = lg; ctx.fillRect(w*0.525, h*0.06, w*0.05, h*0.82);
       ctx.restore();
 
       for (const b of bubbles){
-        b.y -= b.speed;
-        b.x += Math.sin(tick*0.22 + b.phase) * 0.09 + b.drift*0.06;
-        b.phase += 0.006;
-        // recycle when out of view — fade in from bottom
-        if (b.y < -14){
-          b.y = h + rand(8, 28);
-          b.x = rand(w*0.1, w*0.9);
-          b.alpha = rand(0.14, 0.38);
+        b.y -= b.speed * (b.depth===0?0.85:b.depth===2?1.08:1);
+        b.x += Math.sin(tick*(0.18 + b.depth*0.04) + b.phase)* (0.06 + b.depth*0.04) + b.drift*0.045;
+        b.phase += 0.005 + b.depth*0.0015;
+        if (b.y < -18){ b.y = h + rand(10,32); b.x = rand(w*0.08,w*0.92); }
+        const depthFade = b.depth===0 ? 0.7 : b.depth===1 ? 1 : 1.08;
+        const shimmer = 0.92 + Math.sin(tick*0.85 + b.phase)*0.08;
+        const edgeFade = (b.y < h*0.16 ? b.y/(h*0.16) : 1) * (b.y > h*0.90 ? 1 - (b.y - h*0.90)/(h*0.18) : 1);
+        const a = Math.max(0, Math.min(1, b.alpha * shimmer * edgeFade * depthFade));
+        const blurExtra = b.depth===0 ? 0.8 : 0;
+
+        if (b.depth===0){
+          ctx.save(); ctx.globalAlpha = a*0.9; ctx.filter = 'blur(0.7px)';
         }
-        // subtle life shimmer
-        const shimmer = 0.92 + Math.sin(tick*0.9 + b.phase)*0.08;
-        const a = Math.max(0, Math.min(1, b.alpha * shimmer * (b.y < h*0.18 ? (b.y/(h*0.18)) : 1) * (b.y > h*0.88 ? 1 - (b.y - h*0.88)/(h*0.22) : 1)));
-
-        // outer soft halo
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r*2.2, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(0,232,200,${a*0.07})`;
-        ctx.fill();
-
-        // core bubble — pearlescent micro
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+        // halo
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r*(b.depth===0?2.6: b.depth===2?2.4:2.2), 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,232,200,${a*(b.depth===0?0.045:0.065)})`; ctx.fill();
+        // core
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
         const rg = ctx.createRadialGradient(b.x - b.r*0.28, b.y - b.r*0.32, 0, b.x, b.y, b.r);
         rg.addColorStop(0, `rgba(255,255,255,${a})`);
-        rg.addColorStop(0.28, `rgba(230,255,248,${a*0.92})`);
-        rg.addColorStop(0.62, `rgba(0,232,200,${a*0.52})`);
-        rg.addColorStop(1, `rgba(0,160,132,${a*0.22})`);
-        ctx.fillStyle = rg;
-        ctx.fill();
-
-        // specular highlight
-        ctx.beginPath();
-        ctx.arc(b.x - b.r*0.22, b.y - b.r*0.26, b.r*0.34, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(255,255,255,${a*0.92})`;
-        ctx.fill();
+        rg.addColorStop(0.26, `rgba(232,255,248,${a*0.94})`);
+        rg.addColorStop(0.52, `rgba(0,232,200,${a*0.55})`);
+        rg.addColorStop(1, `rgba(0,128,110,${a*0.18})`);
+        ctx.fillStyle = rg; if (b.depth===0) ctx.filter = 'none'; ctx.fill();
+        // specular
+        ctx.beginPath(); ctx.arc(b.x - b.r*0.22, b.y - b.r*0.26, b.r*0.32, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${a*0.88})`; ctx.fill();
+        if (b.depth===0) ctx.restore();
       }
     };
     loop();
   }
 
-  private resizeCanvas(): void {}
+  private initBottleCanvas(): void {
+    const canvas = this.bottleCanvas?.nativeElement;
+    if (!canvas) return;
+    const body = canvas.parentElement as HTMLElement | null;
+    if (!body) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.8);
+    let w = 0, h = 0;
+    type B2 = { x:number; y:number; r:number; speed:number; drift:number; phase:number; alpha:number; };
+    let bubbles: B2[] = [];
+    let tick = 0;
+    let raf: number | null = null;
+    const rand = (a:number,b:number)=> a + Math.random()*(b-a);
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    const count = isMobile ? 32 : 42;
+
+    const init = () => {
+      bubbles = [];
+      for (let i=0;i<count;i++){
+        const r = rand(0.55, 2.1) * (Math.random()<0.10 ? 1.9 : 1);
+        bubbles.push({ x:rand(w*0.14,w*0.86), y:rand(h*0.18,h*1.05), r, speed:rand(0.42, 0.92) * (r>1.8?1.12:1), drift:rand(-0.32,0.32), phase:rand(0,Math.PI*2), alpha:rand(0.52,0.92) });
+      }
+    };
+
+    const resize = () => {
+      const rect = body.getBoundingClientRect();
+      w = rect.width; h = rect.height;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      init();
+    };
+    this.resizeBottle = resize;
+    resize();
+
+    const loop = () => {
+      this.rafBottle = raf = requestAnimationFrame(loop);
+      tick += 0.018;
+      if (document.hidden) return;
+      ctx.clearRect(0,0,w,h);
+
+      // electrode micro-fizz base — video-like dense nucleation
+      ctx.save();
+      ctx.globalAlpha = 0.22 + Math.sin(tick*1.6)*0.06;
+      const eg = ctx.createRadialGradient(w*0.5, h*0.98, 0, w*0.5, h*0.98, w*0.42);
+      eg.addColorStop(0,'rgba(0,232,200,0.26)'); eg.addColorStop(0.52,'rgba(0,232,200,0.10)'); eg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle = eg; ctx.fillRect(0, h*0.78, w, h*0.22);
+      ctx.restore();
+
+      // subtle water caustic inside bottle
+      ctx.save();
+      ctx.globalAlpha = 0.055;
+      const cg = ctx.createLinearGradient(0, h*0.22, w*0.18, h*0.22);
+      cg.addColorStop(0,'rgba(255,255,255,0)'); cg.addColorStop(0.5,'rgba(255,255,255,0.18)'); cg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle = cg; ctx.fillRect(w*0.08, 0, w*0.14, h);
+      ctx.restore();
+
+      for (const b of bubbles){
+        b.y -= b.speed;
+        b.x += Math.sin(tick*0.45 + b.phase)*0.22 + b.drift*0.07 + Math.sin(b.y*0.015)*0.06;
+        b.phase += 0.012;
+        // slight growth as rises (pressure)
+        const grow = 1 + (1 - b.y/h)*0.14;
+        const rNow = b.r * grow;
+        if (b.y < -10){
+          b.y = h + rand(4,16);
+          b.x = rand(w*0.16, w*0.84);
+          b.alpha = rand(0.55,0.92);
+        }
+        const fadeTop = b.y < h*0.12 ? b.y/(h*0.12) : 1;
+        const a = b.alpha * fadeTop * (0.94 + Math.sin(tick*1.2 + b.phase)*0.06);
+        // trail
+        ctx.beginPath(); ctx.arc(b.x, b.y + rNow*0.55, rNow*1.7, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,232,200,${a*0.09})`; ctx.fill();
+        // core
+        ctx.beginPath(); ctx.arc(b.x, b.y, rNow, 0, Math.PI*2);
+        const rg = ctx.createRadialGradient(b.x - rNow*0.28, b.y - rNow*0.3, 0, b.x, b.y, rNow);
+        rg.addColorStop(0, `rgba(255,255,255,${a})`);
+        rg.addColorStop(0.22, `rgba(240,255,250,${a*0.96})`);
+        rg.addColorStop(0.44, `rgba(185,255,240,${a*0.68})`);
+        rg.addColorStop(0.68, `rgba(0,232,200,${a*0.52})`);
+        rg.addColorStop(1, `rgba(0,95,80,${a*0.12})`);
+        ctx.fillStyle = rg; ctx.fill();
+        ctx.beginPath(); ctx.arc(b.x - rNow*0.24, b.y - rNow*0.28, rNow*0.30, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${a*0.96})`; ctx.fill();
+        // micro second highlight for pearl
+        if (rNow > 2.3){
+          ctx.beginPath(); ctx.arc(b.x + rNow*0.18, b.y + rNow*0.18, rNow*0.14, 0, Math.PI*2);
+          ctx.fillStyle = `rgba(255,255,255,${a*0.42})`; ctx.fill();
+        }
+      }
+    };
+    loop();
+  }
 
   addToCart() {
     this.cart.add(this.selected().id, 1);
