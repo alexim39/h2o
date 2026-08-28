@@ -93,6 +93,16 @@ End every sales-intent with soft CTA: Shop Ultra H₂ or Watch how to use.
     return 'Great question! Ultra H₂ brings lab-verified hydrogen to your daily water — 1600 ppb in 3 minutes, loop cap, USB-C. Tell me: are you curious about **benefits, usage, or ordering**? I can also connect you to a human at any time.';
   }
 
+  private extractContent(res: any): string | null {
+    if (!res || typeof res !== 'object') return null;
+    // Raw DeepSeek: {choices:[{message:{content}}]}
+    if (res.choices?.[0]?.message?.content) return res.choices[0].message.content;
+    // Backend Response::success wrapped mock: {data:{choices:[...]}}  or {status,data}
+    if (res.data?.choices?.[0]?.message?.content) return res.data.choices[0].message.content;
+    if (res.data?.data?.choices?.[0]?.message?.content) return res.data.data.choices[0].message.content;
+    return null;
+  }
+
   async send(userText: string): Promise<void> {
     const trimmed = userText.trim();
     if (!trimmed) return;
@@ -101,22 +111,9 @@ End every sales-intent with soft CTA: Shop Ultra H₂ or Watch how to use.
     this.messages.update(arr => [...arr, userMsg]);
     this.persist();
 
-    // If mock key or offline, use canned instantly
-    const isMock = environment.deepseekApiKey.includes('mock') || !environment.deepseekApiKey;
-    if (isMock) {
-      this.loading.set(true);
-      await new Promise(r => setTimeout(r, 650));
-      const reply: ChatMessage = { role:'assistant', content: this.cannedResponse(trimmed), at: new Date().toISOString() };
-      this.messages.update(arr => [...arr, reply]);
-      this.loading.set(false);
-      this.persist();
-      return;
-    }
-
-    // Real DeepSeek call — try backend proxy first, then direct
     this.loading.set(true);
     const payload = {
-      model: environment.deepseekModel,
+      model: environment.deepseekModel || 'deepseek-chat',
       messages: [
         { role:'system', content: this.systemPrompt },
         ...this.messages().map(m => ({ role: m.role, content: m.content }))
@@ -125,31 +122,45 @@ End every sales-intent with soft CTA: Shop Ultra H₂ or Watch how to use.
       max_tokens: 700,
     };
 
-    // Try backend proxy: POST /api/chat (so key stays server-side)
+    const frontendHasRealKey = !!(environment.deepseekApiKey && !environment.deepseekApiKey.includes('mock') && !environment.deepseekApiKey.includes('REPLACE'));
+
+    // 1) Always try backend proxy first — key stays server-side, luxury + secure
     try {
       const res: any = await firstValueFrom(
         this.http.post(`${environment.apiUrl}/chat`, payload).pipe(catchError(() => of(null)))
       );
-      if (res?.choices?.[0]?.message?.content) {
-        this.messages.update(arr => [...arr, { role:'assistant', content: res.choices[0].message.content, at: new Date().toISOString() }]);
+      const content = this.extractContent(res);
+      if (content) {
+        this.messages.update(arr => [...arr, { role:'assistant', content, at: new Date().toISOString() }]);
         this.loading.set(false); this.persist(); return;
+      }
+      // If backend returned structured error with message, surface but continue to fallback
+      if (res?.message && res?.status === false) {
+        // keep trying fallbacks
       }
     } catch {}
 
-    // Fallback: direct DeepSeek (exposes key, only if backend unavailable and real key)
-    try {
-      const direct: any = await firstValueFrom(
-        this.http.post(environment.deepseekApiUrl, payload, {
-          headers: { 'Authorization': `Bearer ${environment.deepseekApiKey}`, 'Content-Type':'application/json' }
-        }).pipe(catchError(()=> of(null)))
-      );
-      if (direct?.choices?.[0]?.message?.content) {
-        this.messages.update(arr => [...arr, { role:'assistant', content: direct.choices[0].message.content, at: new Date().toISOString() }]);
-        this.loading.set(false); this.persist(); return;
-      }
-    } catch {}
+    // 2) Fallback: direct DeepSeek only if frontend has real key (exposes key, use sparingly)
+    if (frontendHasRealKey) {
+      try {
+        const direct: any = await firstValueFrom(
+          this.http.post(environment.deepseekApiUrl, payload, {
+            headers: { 'Authorization': `Bearer ${environment.deepseekApiKey}`, 'Content-Type':'application/json' }
+          }).pipe(catchError(()=> of(null)))
+        );
+        const content2 = this.extractContent(direct);
+        if (content2) {
+          this.messages.update(arr => [...arr, { role:'assistant', content: content2, at: new Date().toISOString() }]);
+          this.loading.set(false); this.persist(); return;
+        }
+      } catch {}
+    }
 
-    // Final fallback to canned
+    // 3) Final premium fallback to curated canned — never leave user hanging
+    if (!frontendHasRealKey) {
+      // small luxury delay so typing feels human when offline
+      await new Promise(r => setTimeout(r, 450));
+    }
     const fallback: ChatMessage = { role:'assistant', content: this.cannedResponse(trimmed), at: new Date().toISOString() };
     this.messages.update(arr => [...arr, fallback]);
     this.loading.set(false);

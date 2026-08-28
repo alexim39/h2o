@@ -9,5 +9,5 @@ export const environment = {
   product: 'Ultra H₂',
   deepseekApiKey: 'sk-deepseek-mock-REPLACE_WITH_REAL_KEY',
   deepseekApiUrl: 'https://api.deepseek.com/chat/completions',
-  deepseekModel: 'deepseek-v4-pro',
+  deepseekModel: 'deepseek-chat',
 };
