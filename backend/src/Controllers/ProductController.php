@@ -50,7 +50,11 @@ final class ProductController
     private function findProduct(string $id): ?array
     {
         $pdo = Database::connection();
-        $row = Database::fetchOne('SELECT * FROM products WHERE (sku = :id OR id = :id) AND is_active = 1 LIMIT 1', ['id' => $id]);
+        // Try sku first (most common: H2OS-ULTRA-H2), then numeric id
+        $row = Database::fetchOne('SELECT * FROM products WHERE sku = :id AND is_active = 1 LIMIT 1', ['id' => $id]);
+        if (!$row && ctype_digit($id)) {
+            $row = Database::fetchOne('SELECT * FROM products WHERE id = :id AND is_active = 1 LIMIT 1', ['id' => $id]);
+        }
         if (!$row) return null;
         $variants = Database::fetchAll('SELECT * FROM product_variants WHERE product_id = :pid AND is_active = 1 ORDER BY price ASC', ['pid' => $row['id']]);
         return $this->mapProduct($row, $variants);
@@ -157,9 +161,14 @@ final class ProductController
         if (isset($body['specs'])) { $fields[] = "specs_json = :specs_json"; $params['specs_json'] = json_encode($body['specs']); }
         if (isset($body['features'])) { $fields[] = "features_json = :features_json"; $params['features_json'] = json_encode($body['features']); }
         if ($fields) {
-            $sql = 'UPDATE products SET '.implode(',', $fields).', updated_at=NOW() WHERE sku=:id OR id=:id';
+            $sql = 'UPDATE products SET '.implode(',', $fields).', updated_at=NOW() WHERE sku=:id';
             try {
-                Database::execute($sql, $params);
+                $rows = Database::execute($sql, $params);
+                if ($rows === 0 && ctype_digit($id)) {
+                    // fallback to numeric id
+                    $sql2 = 'UPDATE products SET '.implode(',', $fields).', updated_at=NOW() WHERE id=:id';
+                    Database::execute($sql2, $params);
+                }
             } catch (\Throwable $e) {
                 if (str_contains($e->getMessage(), 'Unknown column') || str_contains($e->getMessage(), '42S22')) {
                     $allowed = ['name','brand','tagline','description','image'];
@@ -167,8 +176,12 @@ final class ProductController
                     $filteredParams = ['id'=>$id];
                     foreach ($allowed as $f) if (isset($params[$f])) { $filtered[] = "$f = :$f"; $filteredParams[$f] = $params[$f]; }
                     if ($filtered) {
-                        $sql2 = 'UPDATE products SET '.implode(',', $filtered).', updated_at=NOW() WHERE sku=:id OR id=:id';
-                        Database::execute($sql2, $filteredParams);
+                        $sql2 = 'UPDATE products SET '.implode(',', $filtered).', updated_at=NOW() WHERE sku=:id';
+                        $rows2 = Database::execute($sql2, $filteredParams);
+                        if ($rows2 === 0 && ctype_digit($id)) {
+                            $sql3 = 'UPDATE products SET '.implode(',', $filtered).', updated_at=NOW() WHERE id=:id';
+                            Database::execute($sql3, $filteredParams);
+                        }
                     }
                 } else { throw $e; }
             }
