@@ -45,23 +45,28 @@ use App\Controllers\PaymentController;
 use App\Controllers\ReviewController;
 use App\Controllers\ChatController;
 
-// 3) CORS — strict allowlist, credentials false (stateless)
+// 3) CORS — allow hydrogenwaterbottles.store + localhost, always send headers on OPTIONS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowed = Config::allowedOrigins();
 $allowOrigin = null;
-if ($origin !== '' && in_array($origin, $allowed, true)) {
-    $allowOrigin = $origin;
-} elseif (Config::isDebug() && $origin !== '') {
-    // In debug allow any localhost
-    if (str_contains($origin, 'localhost') || str_contains($origin, '127.0.0.1')) $allowOrigin = $origin;
+if ($origin !== '') {
+    if (in_array($origin, $allowed, true)) {
+        $allowOrigin = $origin;
+    } elseif (str_contains($origin, 'hydrogenwaterbottles.store')) {
+        $allowOrigin = $origin; // allow any subdomain of store even if .env stale
+    } elseif (Config::isDebug() && (str_contains($origin, 'localhost') || str_contains($origin, '127.0.0.1'))) {
+        $allowOrigin = $origin;
+    }
 }
 if ($allowOrigin !== null) {
     header("Access-Control-Allow-Origin: $allowOrigin");
     header('Vary: Origin');
+    header('Access-Control-Allow-Credentials: false');
 }
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Paystack-Signature');
 header('Access-Control-Max-Age: 86400');
+header('Access-Control-Expose-Headers: Content-Type');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 0');
