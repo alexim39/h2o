@@ -162,7 +162,6 @@ final class ProductController
                 Database::execute($sql, $params);
             } catch (\Throwable $e) {
                 if (str_contains($e->getMessage(), 'Unknown column') || str_contains($e->getMessage(), '42S22')) {
-                    // Filter to only columns that exist on live (name,brand,tagline,description,image)
                     $allowed = ['name','brand','tagline','description','image'];
                     $filtered = [];
                     $filteredParams = ['id'=>$id];
@@ -171,14 +170,23 @@ final class ProductController
                         $sql2 = 'UPDATE products SET '.implode(',', $filtered).', updated_at=NOW() WHERE sku=:id OR id=:id';
                         Database::execute($sql2, $filteredParams);
                     }
-                    // Persist images/videos/specs as best-effort in description if needed — ignore for now
                 } else { throw $e; }
             }
         }
         if (isset($body['variants'][0])) {
             $v = $body['variants'][0];
-            Database::execute('UPDATE product_variants SET name=:name, price=:price, stock=:stock, image=:img WHERE product_id=(SELECT id FROM products WHERE sku=:sku LIMIT 1) LIMIT 1',
-                ['name'=>$v['name'],'price'=>$v['price'],'stock'=>$v['stock'],'img'=>$v['image'],'sku'=>$id]);
+            try {
+                // Use separate query to get product_id to avoid MySQL subquery LIMIT issue
+                $prod = Database::fetchOne('SELECT id FROM products WHERE sku = :sku LIMIT 1', ['sku'=>$id]);
+                if (!$prod) $prod = Database::fetchOne('SELECT id FROM products WHERE id = :id LIMIT 1', ['id'=>$id]);
+                if ($prod) {
+                    Database::execute('UPDATE product_variants SET name=:name, price=:price, stock=:stock, image=:img WHERE product_id=:pid LIMIT 1',
+                        ['name'=>$v['name'],'price'=>$v['price'],'stock'=>$v['stock'],'img'=>$v['image'],'pid'=>$prod['id']]);
+                }
+            } catch (\Throwable $e) {
+                error_log('[Product update variant] ' . $e->getMessage());
+                // Do not fail whole request if variant update fails — product main fields already saved
+            }
         }
         Response::success(['id'=>$id], 'Product updated');
     }
