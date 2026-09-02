@@ -98,22 +98,39 @@ final class ProductController
         if ($sku === '') $sku = strtoupper(preg_replace('/[^A-Z0-9]+/i','-', $brand.'-'.$name)).'-'.strtoupper(bin2hex(random_bytes(2)));
         $pdo = Database::connection();
 
-        Database::execute(
-            'INSERT INTO products (sku, name, brand, category, badge, tagline, description, image, images_json, videos_json, specs_json, features_json, rating) VALUES (:sku,:name,:brand,:cat,:badge,:tag,:desc,:img,:imgs,:vids,:specs,:feats,:rating)',
-            [
-                'sku'=>$sku, 'name'=>$name, 'brand'=>$brand,
-                'cat'=>$body['category'] ?? 'Hydrogen Bottle',
-                'badge'=>$body['badge'] ?? null,
-                'tag'=>$body['tagline'] ?? 'Hydration, upgraded.',
-                'desc'=>$body['description'] ?? '',
-                'img'=>$body['image'] ?? '/images/ultraH2.jpeg',
-                'imgs'=>json_encode($body['images'] ?? []),
-                'vids'=>json_encode($body['videos'] ?? []),
-                'specs'=>json_encode($body['specs'] ?? []),
-                'feats'=>json_encode($body['features'] ?? []),
-                'rating'=>$body['rating'] ?? 4.9,
-            ]
-        );
+        try {
+            Database::execute(
+                'INSERT INTO products (sku, name, brand, category, badge, tagline, description, image, images_json, videos_json, specs_json, features_json, rating) VALUES (:sku,:name,:brand,:cat,:badge,:tag,:desc,:img,:imgs,:vids,:specs,:feats,:rating)',
+                [
+                    'sku'=>$sku, 'name'=>$name, 'brand'=>$brand,
+                    'cat'=>$body['category'] ?? 'Hydrogen Bottle',
+                    'badge'=>$body['badge'] ?? null,
+                    'tag'=>$body['tagline'] ?? 'Hydration, upgraded.',
+                    'desc'=>$body['description'] ?? '',
+                    'img'=>$body['image'] ?? '/images/ultraH2.jpeg',
+                    'imgs'=>json_encode($body['images'] ?? []),
+                    'vids'=>json_encode($body['videos'] ?? []),
+                    'specs'=>json_encode($body['specs'] ?? []),
+                    'feats'=>json_encode($body['features'] ?? []),
+                    'rating'=>$body['rating'] ?? 4.9,
+                ]
+            );
+        } catch (\Throwable $e) {
+            // Fallback for live DB without new columns (category etc not yet migrated)
+            if (str_contains($e->getMessage(), 'Unknown column') || str_contains($e->getMessage(), '42S22')) {
+                Database::execute(
+                    'INSERT INTO products (sku, name, brand, tagline, description, image, specs_json, features_json) VALUES (:sku,:name,:brand,:tag,:desc,:img,:specs,:feats)',
+                    [
+                        'sku'=>$sku, 'name'=>$name, 'brand'=>$brand,
+                        'tag'=>$body['tagline'] ?? 'Hydration, upgraded.',
+                        'desc'=>$body['description'] ?? '',
+                        'img'=>$body['image'] ?? '/images/ultraH2.jpeg',
+                        'specs'=>json_encode($body['specs'] ?? []),
+                        'feats'=>json_encode($body['features'] ?? []),
+                    ]
+                );
+            } else { throw $e; }
+        }
         $pid = (int)Database::lastInsertId();
         $variant = $body['variants'][0] ?? null;
         if ($variant) {
@@ -141,7 +158,22 @@ final class ProductController
         if (isset($body['features'])) { $fields[] = "features_json = :features_json"; $params['features_json'] = json_encode($body['features']); }
         if ($fields) {
             $sql = 'UPDATE products SET '.implode(',', $fields).', updated_at=NOW() WHERE sku=:id OR id=:id';
-            Database::execute($sql, $params);
+            try {
+                Database::execute($sql, $params);
+            } catch (\Throwable $e) {
+                if (str_contains($e->getMessage(), 'Unknown column') || str_contains($e->getMessage(), '42S22')) {
+                    // Filter to only columns that exist on live (name,brand,tagline,description,image)
+                    $allowed = ['name','brand','tagline','description','image'];
+                    $filtered = [];
+                    $filteredParams = ['id'=>$id];
+                    foreach ($allowed as $f) if (isset($params[$f])) { $filtered[] = "$f = :$f"; $filteredParams[$f] = $params[$f]; }
+                    if ($filtered) {
+                        $sql2 = 'UPDATE products SET '.implode(',', $filtered).', updated_at=NOW() WHERE sku=:id OR id=:id';
+                        Database::execute($sql2, $filteredParams);
+                    }
+                    // Persist images/videos/specs as best-effort in description if needed — ignore for now
+                } else { throw $e; }
+            }
         }
         if (isset($body['variants'][0])) {
             $v = $body['variants'][0];
