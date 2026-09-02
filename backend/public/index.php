@@ -3,22 +3,31 @@ declare(strict_types=1);
 
 /**
  * H2Os Ultra H₂ — Stateless REST API Front Controller
- * Brand: H2Os | Product: Ultra H₂ | Future: catalog of H2Os bottles
- * Security: sits behind public_html/api via symlink or .htaccess rewrite.
- * This file is the ONLY public entry point. Everything else is above docroot.
- *
- * cPanel deployment:
- *   /home/user/hydro-api/        ← backend (this repo's backend/ folder) — ABOVE public_html
- *   /home/user/public_html/      ← Angular dist (frontend)
- *   /home/user/public_html/api/  → symlink to /home/user/hydro-api/public
- *   OR copy backend/public/* into public_html/api/
- *
- * Local dev:
- *   php -S localhost:8000 -t backend/public
+ * Supports both layouts:
+ *  1) cPanel classic: ~/api.hydrogenwaterbottles.store/public/index.php + ~/api.hydrogenwaterbottles.store/backend/*
+ *     (your current: public_html/.htaccess+index.php + backend/*)
+ *  2) Repo dev: backend/public/index.php → backend is dirname(__DIR__)
  */
 
-// 1) Load config (searches for .env above public)
-$backendRoot = dirname(__DIR__);
+// 1) Resolve backend root — handles public_html + backend siblings
+$publicDir = __DIR__;
+$candidates = [
+    dirname($publicDir) . '/backend',          // api.hydrogenwaterbottles.store/backend  ← your layout
+    dirname($publicDir),                       // api.hydrogenwaterbottles.store           ← if backend is api root
+    dirname($publicDir, 2) . '/backend',
+    dirname(__DIR__),                          // repo: backend
+];
+$backendRoot = null;
+foreach ($candidates as $p) {
+    if (is_file($p . '/config/config.php')) { $backendRoot = $p; break; }
+}
+if ($backendRoot === null) {
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['status'=>false,'message'=>'Backend not found — expected backend/config/config.php at ' . implode(' or ', $candidates)]);
+    exit;
+}
+
 require_once $backendRoot . '/config/config.php';
 Config::load($backendRoot);
 
@@ -26,14 +35,12 @@ Config::load($backendRoot);
 if (is_file($backendRoot . '/vendor/autoload.php')) {
     require_once $backendRoot . '/vendor/autoload.php';
 } else {
-   spl_autoload_register(function (string $class): void {
-        global $backendRoot;
+   spl_autoload_register(function (string $class) use ($backendRoot): void {
         if (!str_starts_with($class, 'App\\')) return;
         $rel = substr($class, 4);
         $file = $backendRoot . '/src/' . str_replace('\\', '/', $rel) . '.php';
         if (is_file($file)) require_once $file;
     });
-    // Also load Config class already required
 }
 
 use App\Core\Request;
@@ -53,7 +60,7 @@ if ($origin !== '') {
     if (in_array($origin, $allowed, true)) {
         $allowOrigin = $origin;
     } elseif (str_contains($origin, 'hydrogenwaterbottles.store')) {
-        $allowOrigin = $origin; // allow any subdomain of store even if .env stale
+        $allowOrigin = $origin;
     } elseif (Config::isDebug() && (str_contains($origin, 'localhost') || str_contains($origin, '127.0.0.1'))) {
         $allowOrigin = $origin;
     }
@@ -79,19 +86,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     exit;
 }
 
-// 4) Input sanitization — global
-// (individual controllers also sanitize; this is defense in depth)
+// 4) Input sanitization
 if (!empty($_GET)) {
     foreach ($_GET as $k => $v) {
         if (is_string($v)) $_GET[$k] = trim(strip_tags($v));
     }
 }
 
-// 5) Route definitions — stateless REST
+// 5) Routes
 $req = new Request();
 $router = new Router();
 
-// Health
 $router->get('/', function (Request $r) {
     Response::success([
         'service' => 'H2Os Ultra H₂ API',
@@ -100,6 +105,7 @@ $router->get('/', function (Request $r) {
         'product' => 'Ultra H₂',
         'env' => Config::get('APP_ENV', 'production'),
         'time' => date('c'),
+        'backendRoot' => $GLOBALS['backendRoot'] ?? 'unknown',
         'endpoints' => [
             'GET  /products',
             'GET  /products/{id}',
@@ -114,7 +120,7 @@ $router->get('/', function (Request $r) {
             'POST /payments/webhook',
             'GET  /reviews',
             'POST /reviews',
-            'POST /chat (DeepSeek H2Os Assistant Doctor)',
+            'POST /chat',
         ],
     ], 'H2Os Ultra H₂ API — Hydration, upgraded • 1600 ppb');
 });
@@ -131,41 +137,36 @@ $router->get('/health', function (Request $r) {
     Response::success(['status'=>'ok','db'=>$dbMode,'paystack_mock'=> (new \App\Services\PaystackService())->isMock() ? 'mock' : 'live']);
 });
 
-// Products (H2Os multi-brand catalog)
 $router->get('/products', [ProductController::class, 'index']);
 $router->get('/products/{id}', [ProductController::class, 'show']);
 $router->post('/products', [ProductController::class, 'store']);
 $router->put('/products/{id}', [ProductController::class, 'update']);
 $router->delete('/products/{id}', [ProductController::class, 'destroy']);
 
-// AI Chat — H2Os Assistant Doctor (DeepSeek)
 $router->post('/chat', [ChatController::class, 'chat']);
 
-// Orders
 $router->get('/orders', [OrderController::class, 'index']);
 $router->post('/orders', [OrderController::class, 'store']);
 $router->get('/orders/{reference}', [OrderController::class, 'show']);
 
-// Payments (Paystack)
 $router->post('/payments/initialize', [PaymentController::class, 'initialize']);
 $router->get('/payments/verify/{reference}', [PaymentController::class, 'verify']);
 $router->post('/payments/webhook', [PaymentController::class, 'webhook']);
-// Alias: Paystack dashboard may POST to /webhook
 $router->post('/webhook', [PaymentController::class, 'webhook']);
 
-// Reviews (H2Os community)
 $router->get('/reviews', [ReviewController::class, 'index']);
 $router->post('/reviews', [ReviewController::class, 'store']);
+$router->delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
-// 6) Global exception → JSON (never leak stack in prod)
 set_exception_handler(function (Throwable $e) {
     error_log('[HYDRO API] Uncaught: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
-    $msg = Config::isDebug() ? $e->getMessage() : 'Internal server error';
+    $msg = Config::isDebug() ? $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine() : 'Internal server error';
     $code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
     Response::error($msg, $code);
 });
 
 try {
+    $GLOBALS['backendRoot'] = $backendRoot;
     $router->dispatch($req);
 } catch (Throwable $e) {
     error_log('[HYDRO API] Dispatch error: ' . $e->getMessage());
