@@ -51,6 +51,7 @@ use App\Controllers\OrderController;
 use App\Controllers\PaymentController;
 use App\Controllers\ReviewController;
 use App\Controllers\ChatController;
+use App\Controllers\AdminController;
 
 // 3) CORS — allow hydrogenwaterbottles.store + localhost, always send headers on OPTIONS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -157,6 +158,9 @@ $router->post('/webhook', [PaymentController::class, 'webhook']);
 $router->get('/reviews', [ReviewController::class, 'index']);
 $router->post('/reviews', [ReviewController::class, 'store']);
 $router->delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+
+$router->post('/admin/login', [AdminController::class, 'login']);
+$router->get('/admin/me', [AdminController::class, 'me']);
 
 // Test email — premium luxury template preview (admin only, requires ?to=email or ?secret)
 $router->get('/test-email', function (Request $r) {

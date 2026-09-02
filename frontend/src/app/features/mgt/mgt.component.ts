@@ -399,9 +399,10 @@ export class MgtComponent implements OnInit {
     } finally { this.ordersLoading.set(false); }
   }
 
-  doLogin() {
+  async doLogin() {
     this.loginErr.set(null);
-    if (!this.auth.login(this.user.trim(), this.pass)) {
+    const ok = await this.auth.login(this.user.trim(), this.pass);
+    if (!ok) {
       this.loginErr.set('Invalid username or password.');
     } else {
       this.toast.show('Welcome to H2Os MGT', 'success');
