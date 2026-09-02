@@ -41,7 +41,7 @@ import { RouterLink } from '@angular/router';
             </div>
             <p class="legal">© {{year}} H2Os. Ultra H₂ — Advanced hydrogen infusion. More H2Os bottles coming soon.</p>
             <a href="https://www.google.com/maps/search/?api=1&query=3RD%20FLOOR%2C%20BANK%20OF%20AGRICULTURE%20BUILDING%2C%20Opposite%20Eco%20Bank%2C%20Olu-Obasanjo%20Road%2C%20Port%20Harcourt" target="_blank" rel="noopener" class="address-link">📍 3RD FLOOR, BANK OF AGRICULTURE BUILDING, Opposite Eco Bank, Olu-Obasanjo Road, Port Harcourt.</a>
-            <a routerLink="/mgt" class="mgt-link" target="_blank">⚙ H2Os MGT — Restricted</a>
+            <a routerLink="/mgt" class="mgt-link" target="_blank">⚙ H2Os - mgt</a>
           </div>
         </div>
       </div>
