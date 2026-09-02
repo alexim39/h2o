@@ -32,7 +32,7 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
               <div class="group"><label>Password</label><input type="password" [(ngModel)]="pass" name="pass" placeholder="••••••••" /></div>
               @if (loginErr()) { <div class="error">{{ loginErr() }}</div> }
               <button type="submit" class="btn-neon full">Enter MGT →</button>
-              <p class="hint">Demo: h2os / UltraH2&#64;2025 • Change in auth.service.ts before production</p>
+              <p class="hint">Restricted access • Contact administrator for credentials</p>
             </form>
           </div>
         </div>
@@ -402,7 +402,7 @@ export class MgtComponent implements OnInit {
   doLogin() {
     this.loginErr.set(null);
     if (!this.auth.login(this.user.trim(), this.pass)) {
-      this.loginErr.set('Invalid credentials. Try h2os / UltraH2@2025');
+      this.loginErr.set('Invalid username or password.');
     } else {
       this.toast.show('Welcome to H2Os MGT', 'success');
       this.loadOrders();

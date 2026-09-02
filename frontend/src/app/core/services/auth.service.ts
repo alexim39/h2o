@@ -3,7 +3,7 @@ import { Injectable, signal, computed } from '@angular/core';
 const AUTH_KEY = 'h2os_mgt_auth_v1';
 // In production replace with backend validation; for now mock secure client-side gate
 const ADMIN_USER = 'h2os';
-const ADMIN_PASS = 'UltraH2@2025'; // change in .env for real deployment — backend should validate
+const ADMIN_PASS = 'alexim39'; // MGT admin — change before production if needed
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
