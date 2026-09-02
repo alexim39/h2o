@@ -158,6 +158,30 @@ $router->get('/reviews', [ReviewController::class, 'index']);
 $router->post('/reviews', [ReviewController::class, 'store']);
 $router->delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
+// Test email — premium luxury template preview (admin only, requires ?to=email or ?secret)
+$router->get('/test-email', function (Request $r) {
+    $to = trim((string)($r->query['to'] ?? ''));
+    $secret = (string)($r->query['secret'] ?? '');
+    $expected = (string)\Config::get('MGT_PASS', 'UltraH2@2025');
+    if ($secret !== $expected && !\Config::isDebug()) {
+        Response::error('Unauthorized — add ?secret=UltraH2@2025 or set APP_DEBUG=true', 401);
+    }
+    if ($to === '') $to = 'sales@hydrogenwaterbottles.store';
+    $order = [
+        'reference' => 'H2OS_TEST_' . strtoupper(bin2hex(random_bytes(3))),
+        'total' => 1300000,
+        'currency' => 'NGN',
+        'trackingNumber' => 'HY-TEST' . strtoupper(substr(md5($to),0,6)),
+        'createdAt' => date('c'),
+        'items' => [['variantId'=>'ultra-h2','qty'=>1,'price'=>1300000,'sku'=>'H2OS-ULTRA-H2-500']],
+        'shipping' => ['fullName'=>'Test Ritualist','email'=>$to,'phone'=>'+2348080386208','address'=>'12 Obsidian Way','city'=>'Lagos','state'=>'Lagos','country'=>'Nigeria'],
+    ];
+    $mailer = new \App\Services\EmailService();
+    $okUser = $mailer->sendUserPaidConfirmation($order, $to);
+    $mailer->sendAdminPaidAlert($order);
+    Response::success(['to'=>$to,'user'=>$okUser,'admin'=>true,'ref'=>$order['reference']], $okUser ? 'Test emails queued — check inbox/spam' : 'Mail failed — check error_log / SMTP / SPF');
+});
+
 set_exception_handler(function (Throwable $e) {
     error_log('[HYDRO API] Uncaught: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
     $msg = Config::isDebug() ? $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine() : 'Internal server error';

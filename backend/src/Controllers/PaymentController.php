@@ -168,9 +168,9 @@ final class PaymentController
             $mailer = new EmailService();
             $email = json_decode($order['shipping_json'] ?? '{}', true)['email'] ?? $order['email'];
             if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $mailer->sendUserConfirmation($payload, $email);
+                $mailer->sendUserPaidConfirmation($payload, $email);
             }
-            $mailer->sendAdminAlert($payload);
+            $mailer->sendAdminPaidAlert($payload);
         } catch (\Throwable $e) {
             error_log('[Paid email] ' . $e->getMessage());
         }
