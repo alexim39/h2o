@@ -1,14 +1,12 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Review, MOCK_REVIEWS } from '../models/review.model';
+import { Review } from '../models/review.model';
 import { environment } from '../../../environments/environment';
-import { catchError, of } from 'rxjs';
-
-const STORAGE_KEY = 'h2os_reviews_v1';
+import { firstValueFrom, catchError, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
-  private readonly _reviews = signal<Review[]>(this.load());
+  private readonly _reviews = signal<Review[]>([]);
   private readonly _loading = signal(false);
 
   readonly reviews = this._reviews.asReadonly();
@@ -17,14 +15,13 @@ export class ReviewService {
   readonly count = computed(() => this._reviews().length);
   readonly avgRating = computed(() => {
     const arr = this._reviews();
-    if (!arr.length) return 4.9;
+    if (!arr.length) return 0;
     return +(arr.reduce((s, r) => s + r.rating, 0) / arr.length).toFixed(1);
   });
   readonly sorted = computed(() =>
     [...this._reviews()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   );
 
-  // Pagination helpers for large datasets (virtual pagination)
   readonly page = signal(1);
   readonly perPage = signal(10);
   readonly paginated = computed(() => {
@@ -37,36 +34,20 @@ export class ReviewService {
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.count() / this.perPage())));
 
   constructor(private http: HttpClient) {
-    effect(() => {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this._reviews())); } catch {}
-    });
     this.hydrate();
   }
 
-  private load(): Review[] {
+  private async hydrate(): Promise<void> {
+    this._loading.set(true);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Review[];
-        if (Array.isArray(parsed) && parsed.length) return parsed;
-      }
-    } catch {}
-    return MOCK_REVIEWS;
+      const res: any = await firstValueFrom(this.http.get(`${environment.apiUrl}/reviews`).pipe(catchError(() => of(null))));
+      const data: Review[] = res?.data ?? res ?? [];
+      if (Array.isArray(data)) this._reviews.set(data);
+    } finally { this._loading.set(false); }
   }
 
-  private hydrate(): void {
-    this.http.get<{ status: boolean; data: Review[] }>(`${environment.apiUrl}/reviews`)
-      .pipe(catchError(() => of(null)))
-      .subscribe(res => {
-        if (res?.data && Array.isArray(res.data) && res.data.length) {
-          const localIds = new Set(this._reviews().map(r => r.id));
-          const incoming = res.data.filter(r => !localIds.has(r.id));
-          if (incoming.length) this._reviews.update(arr => [...incoming, ...arr]);
-        }
-      });
-  }
+  async refresh(): Promise<void> { await this.hydrate(); }
 
-  // Per-product filter
   reviewsFor(productId?: string): Review[] {
     if (!productId) return this.sorted();
     return this.sorted().filter(r => !r.productId || r.productId === productId);
@@ -80,26 +61,27 @@ export class ReviewService {
     return { items: all.slice(start, start + perPage), total, pages };
   }
 
-  add(input: { name?: string; phone?: string; text: string; rating: number; anonymous: boolean; productId?: string }): Review {
-    const id = 'rv_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-    const displayName = input.anonymous || !input.name?.trim() ? 'Anonymous' : input.name.trim().slice(0, 32);
-    const review: Review = {
-      id,
-      productId: input.productId,
-      name: displayName,
+  async add(input: { name?: string; phone?: string; text: string; rating: number; anonymous: boolean; productId?: string }): Promise<Review> {
+    if (!input.text?.trim() || input.text.trim().length < 10) throw new Error('Review text must be at least 10 characters');
+    const payload = {
+      name: input.anonymous || !input.name?.trim() ? 'Anonymous' : input.name.trim().slice(0, 32),
       phone: input.phone?.trim() || undefined,
-      rating: Math.min(5, Math.max(1, input.rating)),
       text: input.text.trim().slice(0, 800),
-      createdAt: new Date().toISOString(),
-      verified: false,
-      anonymous: input.anonymous || !input.name?.trim()
+      rating: Math.min(5, Math.max(1, input.rating)),
+      anonymous: !!input.anonymous || !input.name?.trim(),
+      productId: input.productId,
     };
-    if (!review.text) throw new Error('Review text required');
-    this._reviews.update(arr => [review, ...arr]);
-
-    this.http.post(`${environment.apiUrl}/reviews`, review).pipe(catchError(() => of(null))).subscribe();
-
-    return review;
+    const res: any = await firstValueFrom(this.http.post(`${environment.apiUrl}/reviews`, payload).pipe(catchError(() => of(null))));
+    const created: Review = res?.data ?? res;
+    if (created?.id) {
+      this._reviews.update(arr => [created, ...arr]);
+      return created;
+    }
+    // fallback — still add locally if API failed but DB may have persisted
+    const fallback: Review = { id: 'rv_' + Date.now().toString(36), name: payload.name!, phone: payload.phone, rating: payload.rating, text: payload.text, createdAt: new Date().toISOString(), verified: false, anonymous: payload.anonymous, productId: payload.productId };
+    this._reviews.update(arr => [fallback, ...arr]);
+    await this.hydrate();
+    return fallback;
   }
 
   remove(id: string) {

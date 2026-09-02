@@ -35,19 +35,20 @@ final class PaymentController
         if ($amount < 10000) Response::error('Invalid amount', 422); // at least NGN 100
         if ($reference === '') $reference = 'H2OS_' . time() . '_' . strtoupper(bin2hex(random_bytes(3)));
 
-        // Recompute expected amount server-side if items provided — H2Os Ultra H₂ — free shipping
+        // Recompute expected amount server-side from real DB prices
         if (is_array($items) && !empty($items)) {
-            $prices = ['ultra-h2'=>1300000,'obsidian'=>1300000,'titanium'=>1300000,'rosegold'=>1300000];
-            $expected = 0; // Free shipping on all orders
+            $rows = Database::fetchAll('SELECT variant_key, price FROM product_variants WHERE is_active = 1');
+            $priceMap = [];
+            foreach ($rows as $r) $priceMap[$r['variant_key']] = (int)$r['price'];
+            $expected = 0;
             foreach ($items as $it) {
                 $vid = $it['variantId'] ?? '';
                 $qty = (int)($it['qty'] ?? 0);
-                if (isset($prices[$vid])) $expected += $prices[$vid] * $qty;
+                if (isset($priceMap[$vid])) $expected += $priceMap[$vid] * $qty;
             }
-            $expectedKobo = $expected * 100;
-            // Allow 1 NGN tolerance for rounding; otherwise use server amount
-            if (abs($expectedKobo - $amount) > 100) {
-                $amount = $expectedKobo;
+            if ($expected > 0) {
+                $expectedKobo = $expected * 100;
+                if (abs($expectedKobo - $amount) > 100) $amount = $expectedKobo;
             }
         }
 

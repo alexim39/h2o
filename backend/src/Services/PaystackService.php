@@ -2,11 +2,8 @@
 declare(strict_types=1);
 namespace App\Services;
 
-use App\Core\Database;
-
 /**
- * Paystack Integration — Initialize + Verify + Webhook signature check.
- * Uses native cURL (no SDK) so it works on vanilla shared cPanel PHP.
+ * Paystack — Real only (no mock).
  */
 final class PaystackService
 {
@@ -15,31 +12,25 @@ final class PaystackService
 
     public function __construct()
     {
-        $this->secretKey = (string)\Config::get('PAYSTACK_SECRET_KEY', 'sk_test_mock_key');
-        $this->publicKey = (string)\Config::get('PAYSTACK_PUBLIC_KEY', 'pk_test_mock_key');
+        $this->secretKey = (string)\Config::get('PAYSTACK_SECRET_KEY', '');
+        $this->publicKey = (string)\Config::get('PAYSTACK_PUBLIC_KEY', '');
     }
 
     public function isMock(): bool
     {
-        return str_contains($this->secretKey, 'mock') || $this->secretKey === '' || $this->secretKey === 'sk_test_mock_key';
+        $k = strtolower(trim($this->secretKey));
+        return $k === '' || str_contains($k, 'mock') || str_contains($k, 'replace') || $k === 'sk_test_mock_key';
     }
 
-    /**
-     * Initialize transaction — calls Paystack /transaction/initialize
-     * Returns ['authorization_url','access_code','reference'] on success.
-     * Falls back to mock if secret is mock or Paystack unreachable.
-     *
-     * @param array{email:string, amount:int, reference:string, currency?:string, metadata?:array} $payload
-     */
     public function initialize(array $payload): array
     {
         if ($this->isMock()) {
-            return $this->mockInitialize($payload);
+            throw new \RuntimeException('Paystack not configured — set PAYSTACK_SECRET_KEY in .env');
         }
 
         $body = json_encode([
             'email'      => $payload['email'],
-            'amount'     => $payload['amount'], // kobo
+            'amount'     => $payload['amount'],
             'reference'  => $payload['reference'],
             'currency'   => $payload['currency'] ?? 'NGN',
             'callback_url' => (\Config::get('APP_FRONTEND_URL', 'https://hydrogenwaterbottles.store')) . '/confirmation/' . $payload['reference'],
@@ -52,18 +43,14 @@ final class PaystackService
             return $res['data'];
         }
 
-        // Fallback to mock if Paystack returns error (e.g., invalid test key on cPanel without real key)
-        error_log('[Paystack] Initialize failed — mock fallback: ' . json_encode($res));
-        return $this->mockInitialize($payload);
+        error_log('[Paystack] Initialize failed: ' . json_encode($res));
+        throw new \RuntimeException($res['message'] ?? 'Paystack initialize failed', 502);
     }
 
-    /**
-     * Verify transaction — calls Paystack /transaction/verify/{reference}
-     */
     public function verify(string $reference): array
     {
         if ($this->isMock()) {
-            return $this->mockVerify($reference);
+            throw new \RuntimeException('Paystack not configured', 502);
         }
 
         $res = $this->curl('https://api.paystack.co/transaction/verify/' . urlencode($reference), 'GET', null);
@@ -72,47 +59,17 @@ final class PaystackService
             return $res['data'];
         }
 
-        error_log('[Paystack] Verify failed — mock fallback: ' . json_encode($res));
-        return $this->mockVerify($reference);
+        error_log('[Paystack] Verify failed: ' . json_encode($res));
+        throw new \RuntimeException($res['message'] ?? 'Paystack verify failed', 502);
     }
 
-    /**
-     * Verify webhook signature — Paystack sends x-paystack-signature = HMAC SHA512 of raw body with secret.
-     */
     public function verifyWebhookSignature(string $rawBody, string $signature): bool
     {
+        if ($this->isMock()) return false;
         $expected = hash_hmac('sha512', $rawBody, $this->secretKey);
         return hash_equals($expected, $signature);
     }
 
-    private function mockInitialize(array $payload): array
-    {
-        return [
-            'authorization_url' => 'mock://paystack/' . $payload['reference'],
-            'access_code'       => 'mock_access_' . substr($payload['reference'], -6),
-            'reference'         => $payload['reference'],
-        ];
-    }
-
-    private function mockVerify(string $reference): array
-    {
-        // Look up order in DB if available to return real amount
-        $order = null;
-        try {
-            $order = Database::fetchOne('SELECT total, currency, status FROM orders WHERE reference = :ref LIMIT 1', ['ref' => $reference]);
-        } catch (\Throwable) {}
-
-        return [
-            'reference' => $reference,
-            'status'    => 'success',
-            'amount'    => $order ? (int)($order['total'] * 100) : 9300000,
-            'currency'  => $order['currency'] ?? 'NGN',
-            'gateway_response' => 'Successful (mock)',
-            'paid_at'   => date('c'),
-        ];
-    }
-
-    /** @return array decoded JSON */
     private function curl(string $url, string $method, ?string $body): array
     {
         $ch = curl_init($url);

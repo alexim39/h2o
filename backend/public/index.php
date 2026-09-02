@@ -115,17 +115,11 @@ $router->get('/', function (Request $r) {
 });
 
 $router->get('/health', function (Request $r) {
-    // DB check
-    $dbOk = false;
-    $dbMode = 'mock';
+    $dbMode = 'error';
     try {
         $pdo = \App\Core\Database::connection();
-        $dbOk = $pdo !== null;
-        $dbMode = \App\Core\Database::isMock() ? 'mock' : 'connected';
-        if ($dbOk && !$dbMode) {
-            $pdo->query('SELECT 1');
-            $dbMode = 'connected';
-        }
+        $pdo->query('SELECT 1');
+        $dbMode = 'connected';
     } catch (Throwable $e) {
         $dbMode = 'error: ' . $e->getMessage();
     }

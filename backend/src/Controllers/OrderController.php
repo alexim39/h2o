@@ -13,7 +13,13 @@ use App\Services\EmailService;
  */
 final class OrderController
 {
-    private const VALID_VARIANTS = ['ultra-h2','obsidian','titanium','rosegold'];
+    private function variantPriceMap(): array
+    {
+        $rows = Database::fetchAll('SELECT variant_key, price, sku FROM product_variants WHERE is_active = 1');
+        $map = [];
+        foreach ($rows as $r) $map[$r['variant_key']] = ['price' => (int)$r['price'], 'sku' => $r['sku']];
+        return $map;
+    }
 
     /** POST /orders — create order (called before/alongside Paystack init) */
     public function store(Request $req): void
@@ -35,9 +41,12 @@ final class OrderController
                 $errors['shipping.email'] = 'Invalid email.';
             }
         }
+        $priceMap = $this->variantPriceMap();
+        if (empty($priceMap)) Response::error('No products available — please add products via MGT', 500);
         if ($items) {
             foreach ($items as $i => $it) {
-                if (!in_array($it['variantId'] ?? '', self::VALID_VARIANTS, true)) $errors["items.$i.variantId"] = 'Invalid variant.';
+                $vid = $it['variantId'] ?? '';
+                if (!isset($priceMap[$vid])) $errors["items.$i.variantId"] = "Invalid variant: $vid — not in catalog.";
                 if (!isset($it['qty']) || (int)$it['qty'] < 1 || (int)$it['qty'] > 10) $errors["items.$i.qty"] = 'Qty must be 1–10.';
             }
         }
@@ -50,18 +59,14 @@ final class OrderController
         }
         $cleanShipping['email'] = strtolower(trim($cleanShipping['email']));
 
-        // Calculate total using server-side prices (never trust client total) — H2Os Ultra H₂
-        $prices = ['ultra-h2'=>1300000,'obsidian'=>1300000,'titanium'=>1300000,'rosegold'=>1300000];
-        $skus   = ['ultra-h2'=>'H2OS-ULTRA-H2-500','obsidian'=>'H2OS-ULTRA-H2-500','titanium'=>'H2OS-ULTRA-H2-500','rosegold'=>'H2OS-ULTRA-H2-500'];
         $subtotal = 0;
         $cleanItems = [];
         foreach ($items as $it) {
             $vid = $it['variantId'];
-            // Future-proof: fallback to ultra-h2 price if unknown
-            $price = $prices[$vid] ?? 1300000;
+            $price = $priceMap[$vid]['price'];
             $qty = (int)$it['qty'];
             $subtotal += $price * $qty;
-            $cleanItems[] = ['variantId'=>$vid, 'qty'=>$qty, 'price'=>$price, 'sku'=> $skus[$vid] ?? 'H2OS-ULTRA-H2-500'];
+            $cleanItems[] = ['variantId'=>$vid, 'qty'=>$qty, 'price'=>$price, 'sku'=> $priceMap[$vid]['sku']];
         }
         $shippingFee = 0; // Free shipping on all orders
         $total = $subtotal + $shippingFee;

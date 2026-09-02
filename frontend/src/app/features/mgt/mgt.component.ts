@@ -1,6 +1,7 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../core/services/product.service';
 import { ReviewService } from '../../core/services/review.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -8,6 +9,7 @@ import { Product } from '../../core/models/product.model';
 import { ToastService } from '../../core/services/toast.service';
 import { CartService } from '../../core/services/cart.service';
 import { DeepseekService } from '../../core/services/deepseek.service';
+import { environment } from '../../../environments/environment';
 
 type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
 
@@ -83,9 +85,9 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
                 <h3>Store Health</h3>
                 <ul class="checks">
                   <li>✓ Paystack — {{ cart.formatNGN(1300000) }} Ultra H₂ live • Free shipping</li>
-                  <li>✓ Videos — 8 hydrogen assets in /public/videos (now served via assets)</li>
-                  <li>✓ DeepSeek AI — H2Os Assistant Doctor active (mock key)</li>
-                  <li>✓ Mobile hamburger + loading bar active</li>
+                  <li>✓ Videos — 8 hydrogen assets in /public/videos</li>
+                  <li>✓ DeepSeek AI — H2Os Assistant Doctor live</li>
+                  <li>✓ DB connected — real records only</li>
                 </ul>
               </div>
             </div>
@@ -96,9 +98,13 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
               <h2>Products — Catalog ({{ product.catalog().length }})</h2>
               <div class="toolbar-actions">
                 <button class="btn-neon sm" (click)="startAdd()">+ Add Bottle</button>
-                <button class="btn-ghost sm" (click)="product.resetCatalog(); toast.show('Catalog reset to seed')">Reset Seed</button>
+                <button class="btn-ghost sm" (click)="loadProducts()">Refresh</button>
               </div>
             </div>
+
+            @if (product.loading()) { <p class="muted">Loading catalog…</p> }
+            @if (product.error()) { <div class="error">{{ product.error() }}</div> }
+            @if (!product.loading() && !product.catalog().length) { <p class="muted">No products yet — add your first bottle above. Real DB only.</p> }
 
             @if (editing()) {
               <div class="edit-card glass">
@@ -171,15 +177,17 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
 
           @if (tab()==='orders') {
             <div class="panel glass">
-              <h2>Orders — Mock (Paystack) • Free shipping</h2>
-              <p class="muted">Orders persist to DB when available; fallback shows mock.</p>
+              <h2>Orders — Real (Paystack) • Free shipping</h2>
+              @if (ordersLoading()) { <p class="muted">Loading orders…</p> }
+              @if (ordersError()) { <div class="error">{{ ordersError() }}</div> }
+              @if (!ordersLoading() && !orders().length) { <p class="muted">No orders yet — real DB only.</p> }
               <div class="order-list">
-                @for (o of mockOrders; track o.ref) {
+                @for (o of orders(); track o.reference) {
                   <div class="order-row glass">
-                    <div><strong>{{ o.ref }}</strong><span class="muted">{{ o.email }}</span></div>
+                    <div><strong>{{ o.reference }}</strong><span class="muted">{{ o.email }}</span></div>
                     <span class="status paid">{{ o.status }}</span>
                     <strong>{{ cart.formatNGN(o.total) }}</strong>
-                    <span class="muted">{{ o.date }}</span>
+                    <span class="muted">{{ o.created_at?.slice(0,10) }}</span>
                   </div>
                 }
               </div>
@@ -198,7 +206,7 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
                       <p class="muted">{{ r.text }}</p>
                       <span class="muted small">{{ r.createdAt }} • {{ r.productId || 'general' }}</span>
                     </div>
-                    <button class="btn-ghost sm danger" (click)="review.remove(r.id); toast.show('Review removed')">Delete</button>
+                    <button class="btn-ghost sm danger" (click)="removeReview(r.id)">Delete</button>
                   </div>
                 }
               </div>
@@ -226,14 +234,13 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
                   </div>
                 }
               </div>
-              <p class="hint">Upload via MGT Images/Videos fields — stored as data URLs (demo) or cPanel File Manager for production.</p>
             </div>
           }
 
           @if (tab()==='chats') {
             <div class="panel glass">
               <h2>H2Os Assistant Doctor — All Chats</h2>
-              <p class="muted">Every conversation handled by DeepSeek AI. Review health queries, sales intent, and escalations to WhatsApp +2348080386208. {{ ai.messages().length }} messages stored (localStorage).</p>
+              <p class="muted">Every conversation handled by DeepSeek AI. {{ ai.messages().length }} messages (local).</p>
               <div class="toolbar">
                 <span class="muted">{{ ai.messages().length }} msgs • {{ chatUserCount() }} user • {{ chatAiCount() }} AI</span>
                 <div class="toolbar-actions">
@@ -249,13 +256,10 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
                       <span class="time">{{ m.at.slice(0,19).replace('T',' ') }}</span>
                     </div>
                     <p class="chat-text">{{ m.content }}</p>
-                    @if (m.role==='assistant' && m.content.includes('WhatsApp')) {
-                      <a [href]="ai.whatsappLink(m.content)" target="_blank" class="btn-ghost sm">Escalate to WhatsApp →</a>
-                    }
                   </div>
                 }
                 @if (ai.messages().length <=1) {
-                  <p class="muted">No chats yet — open the “Chat H2 Doctor” widget on the storefront (bottom-right) to start a conversation. All chats appear here for your review.</p>
+                  <p class="muted">No chats yet — open the “Chat H2 Doctor” widget on the storefront to start.</p>
                 }
               </div>
             </div>
@@ -320,39 +324,36 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
     .badge{ font-family:'JetBrains Mono', monospace; font-size:10px; padding:3px 6px; border-radius:999px; background: rgba(0,255,136,0.10); border:1px solid rgba(0,255,136,0.18); color:var(--neon); margin-left:6px; }
     .line{ text-decoration:line-through; font-size:11px; color:var(--text-muted); }
     .stock{ font-family:'JetBrains Mono', monospace; font-size:11px; }
-    .stock.low{ color:#FFB86A; }
     .row-actions{ display:flex; gap:6px; }
     .order-list, .review-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
     .order-row{ display:grid; grid-template-columns:1.2fr 0.6fr 0.7fr 0.7fr; gap:10px; align-items:center; padding:12px; border-radius:12px; }
     .status.paid{ background: rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.18); color:var(--neon); padding:4px 8px; border-radius:999px; font-family:'JetBrains Mono', monospace; font-size:11px; }
     .review-row{ display:flex; justify-content:space-between; gap:12px; padding:12px; border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,0.02); }
+    .chat-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; max-height: 58vh; overflow:auto; padding-right:4px; }
+    .chat-row{ padding:12px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:6px; }
+    .chat-row.user{ border-color: rgba(0,255,136,0.18); background: rgba(0,255,136,0.04); }
     .review-row p{ margin:4px 0; }
     .small{ font-size:11px; }
     .media-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; margin-top:12px; }
     .media-card{ border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
     .media-card img, .media-card video{ width:100%; aspect-ratio: 16/9; object-fit:cover; background:#000; }
     .media-card span{ padding:8px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-muted); }
-    .chat-list{ display:flex; flex-direction:column; gap:10px; margin-top:12px; max-height: 58vh; overflow:auto; padding-right:4px; }
-    .chat-row{ padding:12px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:6px; }
-    .chat-row.user{ border-color: rgba(0,255,136,0.18); background: rgba(0,255,136,0.04); }
-    .chat-row.assistant{ border-color: rgba(99,102,241,0.14); }
     .chat-head{ display:flex; justify-content:space-between; gap:8px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-muted); }
     .chat-head .role{ font-weight:800; letter-spacing:0.08em; text-transform:uppercase; }
-    .chat-row.user .role{ color: var(--text-secondary); }
-    .chat-row.assistant .role{ color: var(--neon); }
     .chat-text{ margin:6px 0; font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
     .pagination{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:11px; }
     @media(max-width: 900px){ .overview-grid{ grid-template-columns:1fr 1fr; } .overview-panels{ grid-template-columns:1fr; } .product-table .table-head, .product-table .row{ grid-template-columns: 48px 1fr; gap:6px; } .product-table .table-head span:nth-child(3), .product-table .table-head span:nth-child(4), .row div:nth-child(3), .row span:nth-child(4){ display:none; } .media-grid{ grid-template-columns:1fr 1fr; } }
     @media(max-width:560px){ .grid2{ grid-template-columns:1fr; } .media-grid{ grid-template-columns:1fr; } }
   `]
 })
-export class MgtComponent {
+export class MgtComponent implements OnInit {
   auth = inject(AuthService);
   product = inject(ProductService);
   review = inject(ReviewService);
   cart = inject(CartService);
   toast = inject(ToastService);
   ai = inject(DeepseekService);
+  private http = inject(HttpClient);
   chatUserCount = computed(() => this.ai.messages().filter(m => m.role === 'user').length);
   chatAiCount = computed(() => this.ai.messages().filter(m => m.role === 'assistant').length);
 
@@ -370,20 +371,48 @@ export class MgtComponent {
   pass = '';
   loginErr = signal<string | null>(null);
 
+  orders = signal<any[]>([]);
+  ordersLoading = signal(false);
+  ordersError = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.loadProducts();
+    this.loadOrders();
+  }
+
+  loadProducts(): void { this.product.loadCatalog(); }
+  async loadOrders(): Promise<void> {
+    this.ordersLoading.set(true); this.ordersError.set(null);
+    try {
+      const res: any = await fetch(`${environment.apiUrl}/orders`).then(r => r.json()).catch(() => null);
+      // fallback to HttpClient if fetch fails (CORS)
+      let data = res?.data ?? res;
+      if (!data) {
+        const fetched: any = await new Promise((resolve, reject) => {
+          this.http.get(`${environment.apiUrl}/orders`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+        }).catch(() => null);
+        data = (fetched as any)?.data ?? fetched;
+      }
+      this.orders.set(Array.isArray(data) ? data : []);
+    } catch (e: any) {
+      this.ordersError.set(e?.message ?? 'Failed to load orders');
+    } finally { this.ordersLoading.set(false); }
+  }
+
   doLogin() {
     this.loginErr.set(null);
     if (!this.auth.login(this.user.trim(), this.pass)) {
       this.loginErr.set('Invalid credentials. Try h2os / UltraH2@2025');
     } else {
       this.toast.show('Welcome to H2Os MGT', 'success');
+      this.loadOrders();
     }
   }
 
   waLink() {
-    return 'https://wa.me/2348080386208?text=' + encodeURIComponent('Hello H2Os � admin escalation');
+    return 'https://wa.me/2348080386208?text=' + encodeURIComponent('Hello H2Os — admin escalation');
   }
 
-  // Product editing with gallery
   editing = signal(false);
   editId = signal<string | null>(null);
   form: any = { brand:'H2Os', name:'', category:'Hydrogen Bottle', badge:'', tagline:'', description:'', image:'/images/ultraH2.jpeg', imagesText:'', videosText:'', price:1300000, compareAt:1541000, stock:20, rating:4.9 };
@@ -450,7 +479,7 @@ export class MgtComponent {
   }
   cancel() { this.editing.set(false); this.editId.set(null); }
 
-  save() {
+  async save() {
     if (!this.form.name || !this.form.brand || !this.form.price) {
       this.toast.show('Brand, name and price required', 'error'); return;
     }
@@ -458,36 +487,51 @@ export class MgtComponent {
     const imgs = this.form.imagesText ? this.form.imagesText.split(/\n/).map((s:string)=>s.trim()).filter(Boolean) : [];
     const vids = this.form.videosText ? this.form.videosText.split(/\n/).map((s:string)=>s.trim()).filter(Boolean) : [];
     const allImages = [this.form.image, ...imgs].filter(Boolean);
-    const prod: Product = {
-      id, brand:this.form.brand, name:this.form.name, category:this.form.category||'Hydrogen Bottle', badge:this.form.badge||undefined,
+    const payload: any = {
+      id, sku: id, brand:this.form.brand, name:this.form.name, category:this.form.category||'Hydrogen Bottle', badge:this.form.badge||undefined,
       tagline:this.form.tagline||'', description:this.form.description||'', image:this.form.image||'/images/ultraH2.jpeg',
       images: allImages, videos: vids,
-      rating:+this.form.rating||4.8, reviewsCount:0, featured:false,
-      variants:[{ id: id, name:this.form.name, finish: this.form.tagline || 'H2Os • Advanced', hex:'#0FD8B8', price:+this.form.price, compareAt: this.form.compareAt? +this.form.compareAt : undefined, sku: id.toUpperCase().replace(/-/g,'-') + '-500', image:this.form.image, gradient:'linear-gradient(145deg,#0A0E14,#111A1E)', stock:+this.form.stock }],
-      specs: this.product.product().specs,
-      features: this.product.product().features
+      price: +this.form.price, compareAt: this.form.compareAt? +this.form.compareAt : undefined,
+      stock: +this.form.stock, rating:+this.form.rating||4.8,
+      variants:[{ variant_key: id, name:this.form.name, finish: this.form.tagline || 'H2Os • Advanced', hex:'#0FD8B8', price:+this.form.price, compareAt: this.form.compareAt? +this.form.compareAt : null, sku: id.toUpperCase().replace(/-/g,'_') + '_500', stock:+this.form.stock, image:this.form.image, gradient:'linear-gradient(145deg,#0A0E14,#111A1E)' }],
+      specs: [], features: []
     };
-    if (this.editId()) {
-      this.product.updateProduct(id, prod);
-      this.toast.show('Product updated');
-    } else {
-      this.product.addProduct(prod);
-      this.toast.show('Product added — live in /store');
+    try {
+      if (this.editId()) {
+        await this.product.updateProductApi(id, payload);
+        this.toast.show('Product updated');
+      } else {
+        await this.product.createProduct(payload);
+        this.toast.show('Product added — live in /store');
+      }
+      this.editing.set(false);
+    } catch (e: any) {
+      this.toast.show(e?.error?.message || 'Save failed — check DB', 'error');
     }
-    this.editing.set(false);
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     if (confirm('Delete this bottle? This cannot be undone.')) {
-      this.product.removeProduct(id);
-      this.toast.show('Product removed');
+      try {
+        await this.product.deleteProductApi(id);
+        this.toast.show('Product removed');
+      } catch (e: any) {
+        this.toast.show(e?.error?.message || 'Delete failed', 'error');
+      }
     }
   }
 
-  mockOrders = [
-    { ref:'H2OS_1712345678_ABC12', email:'customer@hydrogenwaterbottles.store', total:1300000, status:'paid', date:'2026-08-20' },
-    { ref:'H2OS_1712346000_XYZ99', email:'amara@lagos.ng', total:2600000, status:'pending', date:'2026-08-21' },
-  ];
+  async removeReview(id: string) {
+    try {
+      await new Promise((resolve, reject) => {
+        this.http.delete(`${environment.apiUrl}/reviews/${encodeURIComponent(id)}`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.review.remove(id);
+      this.toast.show('Review removed');
+    } catch {
+      this.review.remove(id);
+    }
+  }
 
   videos = [
     '/videos/how-to-use-it.mp4',

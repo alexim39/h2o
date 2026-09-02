@@ -6,20 +6,16 @@ use PDO;
 use PDOException;
 
 /**
- * Centralized MySQL Service — Prepared statements only (SQL injection proof).
- * Falls back gracefully if DB unavailable (mock mode).
+ * Centralized MySQL — Real DB only (no mock fallback).
+ * Throws on connection failure so API surfaces DB errors.
  */
 final class Database
 {
     private static ?PDO $pdo = null;
-    private static bool $mockMode = false;
 
-    public static function isMock(): bool { return self::$mockMode; }
-
-    public static function connection(): ?PDO
+    public static function connection(): PDO
     {
         if (self::$pdo !== null) return self::$pdo;
-        if (self::$mockMode) return null;
 
         $host = \Config::get('DB_HOST', '127.0.0.1');
         $port = \Config::get('DB_PORT', '3306');
@@ -36,26 +32,17 @@ final class Database
         ];
         try {
             self::$pdo = new PDO($dsn, $user, $pass, $opts);
-            // Enforce strict mode
             self::$pdo->exec("SET NAMES {$charset} COLLATE utf8mb4_unicode_ci");
             return self::$pdo;
         } catch (PDOException $e) {
-            // Graceful fallback to mock if configured
-            $fallback = strtolower((string)\Config::get('DB_MOCK_FALLBACK', 'true'));
-            if (in_array($fallback, ['1','true','yes','on'], true)) {
-                self::$mockMode = true;
-                error_log('[HYDRO DB] Connection failed — mock fallback active: ' . $e->getMessage());
-                return null;
-            }
+            error_log('[HYDRO DB] Connection failed: ' . $e->getMessage());
             throw $e;
         }
     }
 
-    /** Helper: prepared SELECT */
     public static function fetchAll(string $sql, array $params = []): array
     {
         $pdo = self::connection();
-        if ($pdo === null) return [];
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -64,7 +51,6 @@ final class Database
     public static function fetchOne(string $sql, array $params = []): ?array
     {
         $pdo = self::connection();
-        if ($pdo === null) return null;
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $row = $stmt->fetch();
@@ -74,7 +60,6 @@ final class Database
     public static function execute(string $sql, array $params = []): int
     {
         $pdo = self::connection();
-        if ($pdo === null) return 0;
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->rowCount();
@@ -82,11 +67,10 @@ final class Database
 
     public static function lastInsertId(): string
     {
-        $pdo = self::connection();
-        return $pdo ? $pdo->lastInsertId() : '0';
+        return self::connection()->lastInsertId();
     }
 
-    public static function begin(): void  { self::connection()?->beginTransaction(); }
-    public static function commit(): void { self::connection()?->commit(); }
-    public static function rollBack(): void { self::connection()?->rollBack(); }
+    public static function begin(): void  { self::connection()->beginTransaction(); }
+    public static function commit(): void { self::connection()->commit(); }
+    public static function rollBack(): void { self::connection()->rollBack(); }
 }
