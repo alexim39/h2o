@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, HostListener } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
@@ -13,18 +13,27 @@ import { ReviewService } from '../../core/services/review.service';
   template: `
     <section class="section">
       <div class="container product-grid">
-        <!-- Gallery — multiple images + videos per product (admin upload) -->
+        <!-- Gallery — premium zoom -->
         <div class="preview">
-          <div class="stage glass">
+          <div class="stage glass" (mousemove)="onStageMove($event)" (mouseenter)="lensActive.set(true)" (mouseleave)="lensActive.set(false)" (click)="openLightbox()">
             <span class="badge-stock">● In Stock • Free shipping • {{ product.product().brand }}</span>
+            <span class="zoom-hint">Hover to zoom • Click for fullscreen</span>
             @if (activeVideo()) {
               <video [src]="activeVideo()!" controls autoplay playsinline class="product-video"></video>
-              <button class="close-video" (click)="activeVideo.set(null)">× Back to images</button>
+              <button class="close-video" (click)="activeVideo.set(null); $event.stopPropagation()">× Back to images</button>
             } @else {
-              <img [src]="activeImage()" [alt]="product.product().brand + ' ' + product.product().name" class="product-img" />
+              <img [src]="activeImage()" [alt]="product.product().brand + ' ' + product.product().name" class="product-img" draggable="false" />
+              @if (lensActive()) {
+                <div class="lens" [style.left.px]="lensPos().x" [style.top.px]="lensPos().y"></div>
+                <div class="zoom-pane glass" [style.backgroundImage]="'url(' + activeImage() + ')'" [style.backgroundPosition]="lensBgPos()"></div>
+              }
             }
             <div class="price-tag">
               <span class="led"></span> 1600 <small>PPB</small>
+            </div>
+            <div class="gallery-actions">
+              <button class="icon-btn" (click)="toggleWishlist(); $event.stopPropagation()" [class.active]="wishlisted()" title="Wishlist">♡</button>
+              <button class="icon-btn" (click)="share(); $event.stopPropagation()" title="Share">↗</button>
             </div>
           </div>
 
@@ -66,7 +75,7 @@ import { ReviewService } from '../../core/services/review.service';
           </div>
         </div>
 
-        <!-- Details -->
+        <!-- Details — luxury -->
         <div class="details">
           <span class="eyebrow">{{ product.product().brand }} — {{ product.product().name }} • {{ product.product().tagline }}</span>
           <h1>{{ product.product().brand }} {{ product.product().name }}</h1>
@@ -82,6 +91,11 @@ import { ReviewService } from '../../core/services/review.service';
             <span class="free-badge">Free shipping</span>
           </div>
           <p class="vat">VAT included • ✓ Free shipping on all orders</p>
+
+          <div class="urgency glass">
+            <div class="bar"><span [style.width.%]="stockPct()"></span></div>
+            <span class="u-text">{{ selected().stock }} left • {{ selected().stock < 15 ? 'Low stock — order soon' : 'In stock • Ships today before 4pm WAT' }}</span>
+          </div>
 
           @if (product.hasMultipleVariants()) {
             <div class="variants">
@@ -118,7 +132,28 @@ import { ReviewService } from '../../core/services/review.service';
               Add to Ritual — {{ cart.formatNGN(selected().price * qty()) }}
             </button>
             <button class="btn-ghost full" (click)="buyNow()">Buy Now with Paystack</button>
+            <div class="action-row">
+              <button class="btn-ghost sm" (click)="toggleWishlist()">{{ wishlisted() ? '♥ Wishlisted' : '♡ Add to Wishlist' }}</button>
+              <button class="btn-ghost sm" (click)="share()">↗ Share</button>
+            </div>
             <p class="secure">🔒 Encrypted checkout • Paystack • 256-bit SSL • Free shipping</p>
+          </div>
+
+          <div class="delivery glass">
+            <h4>Delivery estimator</h4>
+            <div class="delivery-row">
+              <input [(ngModel)]="deliveryCity" placeholder="Enter city (e.g. Lagos)" />
+              <button class="btn-neon sm" (click)="checkDelivery()">Check</button>
+            </div>
+            @if (deliveryEta()) { <p class="eta">{{ deliveryEta() }}</p> }
+            <p class="muted small">Free express 1–3 days Nigeria • Lagos often next-day • Tracked</p>
+          </div>
+
+          <div class="trust-badges glass">
+            <span>✓ 30-day ritual guarantee</span><span>•</span><span>✓ CE/FCC/PSE IP67</span><span>•</span><span>✓ Borosilicate + Platinum Ti</span>
+          </div>
+          <div class="pay-row">
+            <span class="pay">Paystack</span><span class="pay">Visa</span><span class="pay">Mastercard</span><span class="pay">Verve</span><span class="pay">Bank Transfer</span>
           </div>
 
           <div class="accordions">
@@ -149,6 +184,22 @@ import { ReviewService } from '../../core/services/review.service';
           }
         </div>
       </div>
+
+      @if (related().length) {
+        <div class="container related">
+          <h3>Complete your ritual</h3>
+          <p class="muted">Pair with other H2Os bottles</p>
+          <div class="related-grid">
+            @for (p of related(); track p.id) {
+              <a class="rel-card glass" [routerLink]="'/store/' + p.id">
+                <img [src]="p.image" [alt]="p.name" />
+                <strong>{{ p.brand }} {{ p.name }}</strong>
+                <span>{{ cart.formatNGN(p.variants[0].price) }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      }
 
       <!-- Per-product reviews -->
       <div class="container reviews-section">
@@ -202,14 +253,50 @@ import { ReviewService } from '../../core/services/review.service';
         }
       </div>
     </section>
+
+    <!-- Lightbox — premium zoom -->
+    @if (lightboxOpen()) {
+      <div class="lightbox" (click)="closeLightbox()" (wheel)="onWheel($event)">
+        <button class="lb-close" (click)="closeLightbox()">×</button>
+        <div class="lb-zoombar">
+          <button (click)="zoomOut(); $event.stopPropagation()">−</button>
+          <span>{{ (lightboxZoom()*100).toFixed(0) }}%</span>
+          <button (click)="zoomIn(); $event.stopPropagation()">+</button>
+          <button class="btn-ghost sm" (click)="resetZoom(); $event.stopPropagation()">Reset</button>
+        </div>
+        <div class="lb-frame" (click)="$event.stopPropagation()" (mousedown)="startPan($event)" (mousemove)="pan($event)" (mouseup)="endPan()" (mouseleave)="endPan()" (touchstart)="startPan($event)" (touchmove)="pan($event)" (touchend)="endPan()">
+          <img [src]="activeImage()" [alt]="product.product().name" class="lb-img" [style.transform]="'translate(' + panX() + 'px,' + panY() + 'px) scale(' + lightboxZoom() + ')'" draggable="false" />
+        </div>
+        <div class="lb-thumbs">
+          @for (img of galleryImages(); track $index) {
+            <button [class.active]="activeImage()===img" (click)="activeImage.set(img); resetZoom(); $event.stopPropagation()"><img [src]="img" /></button>
+          }
+        </div>
+        <p class="lb-hint">Scroll to zoom • Drag to pan • Click outside to close</p>
+      </div>
+    }
+
+    <!-- Sticky ATC — mobile luxury -->
+    <div class="sticky-atc glass" [class.show]="showSticky()">
+      <img [src]="product.product().image" alt="" class="sticky-thumb" />
+      <div class="sticky-info"><strong>{{ product.product().brand }} {{ product.product().name }}</strong><span>{{ cart.formatNGN(selected().price) }} • {{ selected().stock }} left</span></div>
+      <button class="btn-neon sm" (click)="addToCart()">Add — {{ cart.formatNGN(selected().price) }}</button>
+    </div>
   `,
   styles: [`
     .product-grid{ display:grid; grid-template-columns: 1.05fr 0.95fr; gap:32px; align-items:start; }
-    .stage{ border-radius:24px; padding:18px; min-height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .stage{ border-radius:24px; padding:18px; min-height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; cursor: zoom-in; }
     .badge-stock{ position:absolute; top:14px; left:14px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; background: rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.18); color:var(--neon); padding:6px 10px; border-radius:999px; z-index:2; }
-    .product-img, .product-video{ max-height: 380px; width:100%; object-fit:contain; border-radius:16px; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5)); }
+    .zoom-hint{ position:absolute; top:14px; right:14px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; background: rgba(5,5,7,0.72); border:1px solid var(--border); color:var(--text-secondary); padding:6px 10px; border-radius:999px; z-index:2; backdrop-filter: blur(8px); }
+    .product-img, .product-video{ max-height: 380px; width:100%; object-fit:contain; border-radius:16px; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5)); user-select:none; -webkit-user-drag: none; }
     .product-video{ background:#000; }
     .close-video{ position:absolute; top:14px; right:14px; background: rgba(5,5,7,0.82); border:1px solid var(--border); color:white; padding:6px 10px; border-radius:999px; font-size:11px; z-index:3; }
+    .lens{ position:absolute; width:120px; height:120px; border-radius:50%; border:1px solid rgba(0,255,136,0.28); box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 12px 24px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(255,255,255,0.12); pointer-events:none; z-index:3; background: rgba(0,255,136,0.04); backdrop-filter: blur(0.5px); transform: translate(-50%, -50%); }
+    .zoom-pane{ position:absolute; right: -16px; top: 50%; transform: translate(100%, -50%); width: 340px; height: 340px; border-radius:16px; border:1px solid var(--border); background-repeat:no-repeat; background-size: 280% 280%; display:none; z-index:4; box-shadow: 0 16px 40px rgba(0,0,0,0.42); pointer-events:none; }
+    @media(min-width: 1100px){ .lens{ display:block; } .zoom-pane{ display:block; } }
+    .gallery-actions{ position:absolute; bottom:14px; right:14px; display:flex; gap:8px; z-index:2; }
+    .icon-btn{ width:36px; height:36px; border-radius:50%; background: rgba(5,5,7,0.72); border:1px solid var(--border); color:white; display:grid; place-items:center; font-size:14px; backdrop-filter: blur(8px); }
+    .icon-btn.active{ background: var(--neon); color:#050507; border-color:var(--neon); }
     .gallery-thumbs{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
     .thumb-img, .thumb-vid{ width:64px; height:64px; border-radius:12px; border:1px solid var(--border); overflow:hidden; position:relative; padding:0; background:#0A0C0F; flex-shrink:0; }
     .thumb-img.active, .thumb-vid.active{ outline:2px solid var(--neon); outline-offset:2px; }
@@ -233,7 +320,11 @@ import { ReviewService } from '../../core/services/review.service';
     .compare{ font-size:13px; color:var(--text-muted); text-decoration:line-through; }
     .save{ font-size:11px; background: rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.18); color:var(--neon); padding:4px 8px; border-radius:999px; font-weight:700; }
     .free-badge{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; background: rgba(0,255,136,0.12); border:1px solid rgba(0,255,136,0.18); color:var(--neon); padding:4px 8px; border-radius:999px; }
-    .vat{ font-size:11px; color:var(--text-muted); margin-bottom:16px; }
+    .vat{ font-size:11px; color:var(--text-muted); margin-bottom:10px; }
+    .urgency{ border-radius:12px; padding:10px 12px; margin-bottom:12px; display:flex; flex-direction:column; gap:6px; }
+    .urgency .bar{ height:6px; background: rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; }
+    .urgency .bar span{ display:block; height:100%; background: var(--neon); box-shadow:0 0 8px var(--neon); transition: width .4s; }
+    .u-text{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-secondary); }
     .variants h3, .qty-row h3{ font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
     .single-badge{ display:flex; align-items:center; gap:8px; background: rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.14); color:var(--text-secondary); font-size:12px; padding:10px 12px; border-radius:12px; }
     .single-badge .dot{ width:6px;height:6px;border-radius:50%;background:var(--neon);box-shadow:0 0 8px var(--neon); }
@@ -251,7 +342,17 @@ import { ReviewService } from '../../core/services/review.service';
     .stock{ font-size:11px; color:var(--text-muted); margin-left:8px; }
     .actions{ display:flex; flex-direction:column; gap:10px; margin-top:18px; }
     .full{ width:100%; justify-content:center; }
+    .action-row{ display:flex; gap:8px; }
+    .action-row .btn-ghost{ flex:1; justify-content:center; }
     .secure{ text-align:center; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
+    .delivery{ border-radius:14px; padding:14px; margin-top:14px; }
+    .delivery h4{ font-size:12px; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
+    .delivery-row{ display:flex; gap:8px; }
+    .delivery-row input{ flex:1; background: rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; padding:10px 12px; color:var(--text-primary); font-size:13px; outline:none; }
+    .eta{ margin-top:8px; font-size:12px; color:var(--neon); font-weight:700; }
+    .trust-badges{ margin-top:12px; border-radius:999px; padding:10px 14px; display:flex; gap:8px; justify-content:center; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-secondary); flex-wrap:wrap; }
+    .pay-row{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+    .pay{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; background: rgba(255,255,255,0.04); border:1px solid var(--border); padding:6px 10px; border-radius:999px; color:var(--text-muted); }
     .accordions{ margin-top:18px; display:flex; flex-direction:column; gap:8px; }
     details{ background: var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:14px; }
     summary{ font-size:13px; font-weight:700; cursor:pointer; list-style:none; display:flex; justify-content:space-between; }
@@ -263,6 +364,13 @@ import { ReviewService } from '../../core/services/review.service';
     .s{ padding:12px 14px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); display:flex; flex-direction:column; gap:4px; }
     .s span{ font-size:10px; letter-spacing:0.10em; text-transform:uppercase; color:var(--text-muted); }
     .s strong{ font-size:12px; }
+    .related{ margin-top:24px; }
+    .related h3{ font-family:'Space Grotesk',sans-serif; font-size:18px; }
+    .related-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; margin-top:12px; }
+    .rel-card{ border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:6px; text-align:center; }
+    .rel-card img{ width:100%; height:120px; object-fit:contain; }
+    .rel-card strong{ font-size:13px; }
+    .rel-card span{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-secondary); }
     .reviews-section{ margin-top:24px; }
     .reviews-head{ border-radius:16px; padding:16px; display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; }
     .reviews-head h3{ font-size:16px; }
@@ -291,8 +399,27 @@ import { ReviewService } from '../../core/services/review.service';
     .author{ display:flex; gap:8px; align-items:center; }
     .ava{ width:28px;height:28px;border-radius:50%; background:var(--bg-card); border:1px solid var(--border); display:grid; place-items:center; font-size:11px; font-weight:700; }
     .pagination{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted); }
-    @media(max-width: 960px){ .product-grid{ grid-template-columns:1fr; } .spec-grid{ grid-template-columns:1fr 1fr; } .row{ grid-template-columns:1fr; } }
-    @media(max-width: 560px){ .spec-grid{ grid-template-columns:1fr; } .gallery-thumbs{ justify-content:flex-start; overflow:auto; } }
+    .lightbox{ position:fixed; inset:0; z-index:80; background: rgba(5,5,7,0.92); backdrop-filter: blur(12px); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px; }
+    .lb-close{ position:absolute; top:14px; right:14px; width:40px; height:40px; border-radius:50%; background: rgba(255,255,255,0.08); border:1px solid var(--border); color:white; font-size:22px; display:grid; place-items:center; }
+    .lb-zoombar{ position:absolute; top:14px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; background: rgba(5,5,7,0.72); border:1px solid var(--border); padding:6px 10px; border-radius:999px; backdrop-filter: blur(8px); }
+    .lb-zoombar button{ width:32px; height:32px; border-radius:50%; background: rgba(255,255,255,0.06); border:1px solid var(--border); color:white; font-size:16px; }
+    .lb-zoombar span{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-secondary); min-width:42px; text-align:center; }
+    .lb-frame{ width:min(92vw, 900px); height:min(68vh, 620px); display:grid; place-items:center; overflow:hidden; border-radius:16px; background:#0A0C0F; border:1px solid var(--border); cursor: grab; }
+    .lb-frame:active{ cursor: grabbing; }
+    .lb-img{ max-width:100%; max-height:100%; object-fit:contain; will-change: transform; user-select:none; -webkit-user-drag: none; }
+    .lb-thumbs{ display:flex; gap:8px; margin-top:12px; overflow:auto; max-width:92vw; }
+    .lb-thumbs button{ width:56px; height:56px; border-radius:10px; overflow:hidden; border:1px solid var(--border); opacity:0.6; flex-shrink:0; padding:0; }
+    .lb-thumbs button.active{ opacity:1; outline:2px solid var(--neon); outline-offset:2px; }
+    .lb-thumbs img{ width:100%; height:100%; object-fit:cover; }
+    .lb-hint{ margin-top:10px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); text-align:center; }
+    .sticky-atc{ position:fixed; bottom:14px; left:14px; right:14px; z-index:70; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:16px; transform: translateY(120%); transition: transform .28s; }
+    .sticky-atc.show{ transform: translateY(0); }
+    .sticky-thumb{ width:44px; height:44px; border-radius:10px; object-fit:contain; background:#0A0C0F; border:1px solid var(--border); padding:4px; }
+    .sticky-info{ display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+    .sticky-info strong{ font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sticky-info span{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-secondary); }
+    @media(max-width: 960px){ .product-grid{ grid-template-columns:1fr; } .spec-grid{ grid-template-columns:1fr 1fr; } .row{ grid-template-columns:1fr; } .zoom-pane{ display:none !important; } }
+    @media(max-width: 560px){ .spec-grid{ grid-template-columns:1fr; } .gallery-thumbs{ justify-content:flex-start; overflow:auto; } .related-grid{ grid-template-columns:1fr 1fr; } }
   `]
 })
 export class ProductComponent implements OnInit {
@@ -307,7 +434,22 @@ export class ProductComponent implements OnInit {
   activeImage = signal<string>('');
   activeVideo = signal<string | null>(null);
 
-  // Per-product gallery
+  // Zoom
+  lensActive = signal(false);
+  lensPos = signal({ x: 0, y: 0 });
+  lensBgPos = signal('50% 50%');
+  lightboxOpen = signal(false);
+  lightboxZoom = signal(1);
+  panX = signal(0);
+  panY = signal(0);
+  private panning = false;
+  private panStart = { x: 0, y: 0 };
+
+  // Premium extras
+  wishlisted = signal(false);
+  deliveryCity = '';
+  deliveryEta = signal<string | null>(null);
+
   galleryImages = computed(() => {
     const p = this.product.product();
     const imgs = (p.images && p.images.length ? p.images : [p.image]).filter(Boolean);
@@ -317,8 +459,9 @@ export class ProductComponent implements OnInit {
     const p = this.product.product();
     return (p.videos || []).filter(Boolean);
   });
+  related = computed(() => this.product.catalog().filter(p => p.id !== this.product.product().id).slice(0,3));
+  stockPct = computed(() => Math.min(100, Math.max(12, (this.selected().stock / 60) * 100)));
 
-  // Per-product reviews with pagination
   revName = '';
   revText = '';
   revRating = signal(5);
@@ -341,6 +484,13 @@ export class ProductComponent implements OnInit {
   });
   totalPages = computed(() => Math.max(1, Math.ceil(this.perProductReviews().length / this.perPage)));
 
+  showSticky = signal(false);
+
+  @HostListener('window:scroll')
+  onScroll() {
+    this.showSticky.set(window.scrollY > 520);
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -349,14 +499,106 @@ export class ProductComponent implements OnInit {
       else {
         const prodByVariant = this.product.getProductByVariant(id);
         if (prodByVariant) this.product.selectProduct(prodByVariant.id);
+        else this.product.loadProduct(id).then(p => {
+          if (p) this.activeImage.set((p.images && p.images[0]) || p.image);
+        });
       }
     }
-    // init gallery
     const imgs = this.galleryImages();
     if (imgs.length) this.activeImage.set(imgs[0]);
-    // watch product change to reset gallery
-    // (computed will update, but we need effect)
+    this.wishlisted.set(this.isWishlisted());
+    // keep lens accessible
+    if (typeof document !== 'undefined') {
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') this.closeLightbox(); });
+    }
   }
+
+  isWishlisted(): boolean {
+    try {
+      const raw = localStorage.getItem('h2os_wishlist');
+      const arr: string[] = raw ? JSON.parse(raw) : [];
+      return arr.includes(this.product.product().id);
+    } catch { return false; }
+  }
+  toggleWishlist() {
+    try {
+      const raw = localStorage.getItem('h2os_wishlist');
+      let arr: string[] = raw ? JSON.parse(raw) : [];
+      const id = this.product.product().id;
+      if (arr.includes(id)) arr = arr.filter(x => x !== id);
+      else arr.push(id);
+      localStorage.setItem('h2os_wishlist', JSON.stringify(arr));
+      this.wishlisted.set(arr.includes(id));
+      this.toast.show(this.wishlisted() ? 'Added to wishlist ♥' : 'Removed from wishlist', 'info');
+    } catch {}
+  }
+
+  share() {
+    const url = location.href;
+    const text = `${this.product.product().brand} ${this.product.product().name} — ${this.product.product().tagline} ${url}`;
+    if ((navigator as any).share) {
+      (navigator as any).share({ title: document.title, text, url }).catch(()=>{});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(()=> this.toast.show('Link copied — share anywhere', 'info'));
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+  }
+
+  checkDelivery() {
+    const c = this.deliveryCity.trim().toLowerCase();
+    if (!c) { this.deliveryEta.set('Enter city to estimate'); return; }
+    const isLagos = ['lagos','ikeja','lekki','victoria island','vi'].some(k => c.includes(k));
+    const isPH = ['port harcourt','ph','rivers'].some(k => c.includes(k));
+    const isAbuja = c.includes('abuja');
+    if (isLagos) this.deliveryEta.set('✓ Free express to Lagos — next-day, tracked. Order before 4pm WAT ships today.');
+    else if (isPH || isAbuja) this.deliveryEta.set('✓ Free express to ' + this.deliveryCity + ' — 1–2 days, tracked.');
+    else this.deliveryEta.set('✓ Free express to ' + this.deliveryCity + ' — 1–3 days, tracked. 30-day guarantee.');
+  }
+
+  onStageMove(e: MouseEvent) {
+    const el = e.currentTarget as HTMLElement;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const pctX = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const pctY = Math.max(0, Math.min(100, (y / rect.height) * 100));
+    this.lensPos.set({ x, y });
+    this.lensBgPos.set(`${pctX}% ${pctY}%`);
+  }
+
+  openLightbox() {
+    if (this.activeVideo()) return;
+    this.lightboxOpen.set(true);
+    this.lightboxZoom.set(1);
+    this.panX.set(0); this.panY.set(0);
+    document.body.style.overflow = 'hidden';
+  }
+  closeLightbox() {
+    this.lightboxOpen.set(false);
+    document.body.style.overflow = '';
+    this.resetZoom();
+  }
+  zoomIn() { this.lightboxZoom.update(v => Math.min(3, +(v + 0.4).toFixed(2))); }
+  zoomOut() { this.lightboxZoom.update(v => Math.max(1, +(v - 0.4).toFixed(2))); if (this.lightboxZoom()===1){ this.panX.set(0); this.panY.set(0); } }
+  resetZoom() { this.lightboxZoom.set(1); this.panX.set(0); this.panY.set(0); }
+  onWheel(e: WheelEvent) {
+    e.preventDefault();
+    if (e.deltaY < 0) this.zoomIn(); else this.zoomOut();
+  }
+  startPan(e: MouseEvent | TouchEvent) {
+    this.panning = true;
+    const pt = (e as TouchEvent).touches ? (e as TouchEvent).touches[0] : e as MouseEvent;
+    this.panStart = { x: (pt as MouseEvent).clientX - this.panX(), y: (pt as MouseEvent).clientY - this.panY() };
+  }
+  pan(e: MouseEvent | TouchEvent) {
+    if (!this.panning || this.lightboxZoom()===1) return;
+    const pt = (e as TouchEvent).touches ? (e as TouchEvent).touches[0] : e as MouseEvent;
+    this.panX.set((pt as MouseEvent).clientX - this.panStart.x);
+    this.panY.set((pt as MouseEvent).clientY - this.panStart.y);
+  }
+  endPan() { this.panning = false; }
 
   select(id: any) { this.product.selectVariant(id); }
   inc() { this.qty.update(v => Math.min(10, v + 1)); }
@@ -374,11 +616,11 @@ export class ProductComponent implements OnInit {
     this.cart.openDrawer();
   }
 
-  submitReview() {
+  async submitReview() {
     this.revErr.set(null);
     if (!this.revText.trim()) { this.revErr.set('Please write your review'); return; }
     try {
-      this.reviews.add({ name: this.revName, text: this.revText, rating: this.revRating(), anonymous: this.revAnon(), productId: this.product.product().id });
+      await this.reviews.add({ name: this.revName, text: this.revText, rating: this.revRating(), anonymous: this.revAnon(), productId: this.product.product().id });
       this.toast.show('Review posted — thank you!');
       this.revText = ''; this.revName = '';
     } catch (e: any) { this.revErr.set(e?.message || 'Failed'); }
