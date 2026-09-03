@@ -338,13 +338,13 @@ import { ToastService } from '../../core/services/toast.service';
   `,
   styles: [`
     .hero { position:relative; overflow:hidden; padding: 28px 0 0; border-bottom: 1px solid var(--border); isolation:isolate; background: #050507; }
-    .hero-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; z-index:0; opacity:0.52; filter: saturate(0.82) brightness(0.92) contrast(1.05) blur(0px); transform: scale(1.02); animation: heroVideoKenBurns 18s ease-in-out infinite alternate; }
+    .hero-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; z-index:0; opacity:0.32; filter: saturate(0.72) brightness(0.88) contrast(1.08) blur(0.2px); transform: scale(1.02); animation: heroVideoKenBurns 18s ease-in-out infinite alternate; }
     @keyframes heroVideoKenBurns{ 0%{ transform: scale(1.02) translate(0,0); } 100%{ transform: scale(1.06) translate(-8px, 4px); } }
     .hero-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:1; opacity:0.92; }
     .hero-video-overlay, .hero-glow{ z-index:2; }
     .hero-grid{ z-index:3; }
     .hero-video-overlay{ position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
-    .hero-video-overlay .vignette{ position:absolute; inset:0; background: radial-gradient(820px 620px at 52% 48%, transparent 42%, rgba(0,0,0,0.42) 88%), linear-gradient(180deg, rgba(5,5,7,0.08) 0%, rgba(5,5,7,0.38) 100%); }
+    .hero-video-overlay .vignette{ position:absolute; inset:0; background: radial-gradient(820px 620px at 52% 48%, transparent 38%, rgba(0,0,0,0.52) 88%), linear-gradient(180deg, rgba(5,5,7,0.14) 0%, rgba(5,5,7,0.48) 100%), radial-gradient(600px 400px at 50% 0%, rgba(0,255,136,0.06), transparent 62%); }
     .hero-video-overlay .grain{ position:absolute; inset:-10%; opacity:0.035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
     .hero-video-overlay .caustic{ position:absolute; inset:0; opacity:0.18; background:
       radial-gradient(420px 320px at 18% 22%, rgba(0,255,136,0.10), transparent 62%),
@@ -358,7 +358,7 @@ import { ToastService } from '../../core/services/toast.service';
     }
     @media (prefers-reduced-motion: reduce){ .hero-video{ display:none; } .hero-canvas, .hero-video-overlay .caustic{ display:none; } }
     @media (max-width: 640px){
-      .hero-video{ opacity:0.38; animation:none; transform:none; filter: saturate(0.78) brightness(0.88) contrast(1.04); }
+      .hero-video{ opacity:0.26; animation:none; transform:none; filter: saturate(0.72) brightness(0.84) contrast(1.06) blur(0.2px); }
     }
     .hero-grid { position:relative; z-index:1; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; min-height: 640px; padding: 36px 24px 40px; }
 
