@@ -237,6 +237,11 @@ export class VideosComponent {
     { id:'yt-wX4yqsAklF8', youtubeId:'wX4yqsAklF8', title:'The Science Behind Hydrogen Water — How It Cleans Cells & Restores Health', category:'learn', badge:'Learn • YouTube • Cellular', desc:'Amanda Bobbett — how H₂ cleans cells at the cellular level, restores health. Supports human life.' },
     { id:'yt-AtBxC9WZXX4', youtubeId:'AtBxC9WZXX4', title:'Can Hydrogen Water Cure Cancer? Claims & Science', category:'learn', badge:'Learn • YouTube • Disease', desc:'Exploring the cancer claims — what science says about H₂ and disease. Educational, not medical advice.' },
     { id:'yt-IvNNls6aJLk', youtubeId:'IvNNls6aJLk', title:'Hydrogen Water 101 — Health Benefits Introduction', category:'learn', badge:'Learn • YouTube • 101', desc:'101 guide — how H₂ promises benefits via extra molecules acting as selective antioxidants for wellness.' },
+    // More — benefits, disease, human life
+    { id:'yt-FZtaexSmYkQ', youtubeId:'FZtaexSmYkQ', title:'Hydrogen Water Benefits EXPLAINED — Dr. Paul Barattiero', category:'learn', badge:'Learn • YouTube • Benefits', desc:'Dr. Paul Barattiero expert guide — why H₂ is gaining worldwide attention for benefits. Supports wellness.' },
+    { id:'yt-WV-XYA9Qpek', youtubeId:'WV-XYA9Qpek', title:'Biohack Yourself Documentary — Hydrogen Water BioStacking', category:'learn', badge:'Learn • YouTube • Human Life', desc:'BioStacking with Carbon 60 + H₂ — how hydrogen impacts gut & brain, reduces inflammation, supports human life.' },
+    { id:'yt-SOmcolTnVCk', youtubeId:'SOmcolTnVCk', title:'Hydrogen Water — The Ultimate Guide', category:'learn', badge:'Learn • YouTube • Guide', desc:'Ultimate guide — deep dive into what H₂ water is, benefits you enjoy drinking it regularly, and human life support.' },
+    { id:'yt-C4gIk3sX6dg', youtubeId:'C4gIk3sX6dg', title:'Does Water with Added Hydrogen Have More Benefits?', category:'learn', badge:'Learn • YouTube • Benefits', desc:'The Doctors — does water with added hydrogen have more benefits? Clinical discussion on disease support.' },
   ];
 
   howtoCount = computed(()=> this.videos.filter(v=>v.category==='howto').length);
