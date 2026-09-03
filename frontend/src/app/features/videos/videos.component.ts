@@ -226,7 +226,6 @@ export class VideosComponent {
     { id:'inflammation', src:'/videos/reducing-inflamation-testimonial.mp4', title:'Reducing inflammation — Before & after', category:'testimonial', badge:'Testimonial • Inflammation', desc:'Inflammation, soreness, and recovery — customer’s week 1 to week 3.' },
     { id:'sexual', src:'/videos/sexual-performance-testimonial.mp4', title:'Vitality & performance — Confident ritual', category:'testimonial', badge:'Testimonial • Vitality', desc:'Customer on energy, vitality and confidence — honest review.' },
     // Curated YouTube — your 7 links + disease/benefits/human-life essentials (no redirect)
-    { id:'yt-93Pcv9ry7L8', youtubeId:'93Pcv9ry7L8', title:'Hydrogen Water Bottles: Your Questions Answered.', category:'learn', badge:'Learn • YouTube • Q&A', desc:'10 Years Younger — how bottles work, ppb, daily ritual. Educational.' },
     { id:'yt-RLLAgmPSE_4', youtubeId:'RLLAgmPSE_4', title:'Why I Changed My Mind About Hydrogen Water (with Tyler LeBaron)', category:'learn', badge:'Learn • YouTube • Expert', desc:'Paul Saladino MD with hydrogen scientist Tyler LeBaron — deep science, why he changed his mind.' },
     { id:'yt-ciyvUm1iz8w', youtubeId:'ciyvUm1iz8w', title:'Benefits of Hydrogen Water to Fight Oxidative Stress — Dr. Paul Barattiero', category:'learn', badge:'Learn • YouTube • Science', desc:'How H₂ fights oxidative stress & inflammation — core mechanism for benefits.' },
     { id:'yt-_LeWBAY-2rQ', youtubeId:'_LeWBAY-2rQ', title:'The 4 Key Benefits Of Hydrogen Water', category:'learn', badge:'Learn • YouTube • Benefits', desc:'HBOT USA — antioxidant, anti-inflammatory, recovery, clarity — supports daily life.' },
@@ -242,6 +241,8 @@ export class VideosComponent {
     { id:'yt-WV-XYA9Qpek', youtubeId:'WV-XYA9Qpek', title:'Biohack Yourself Documentary — Hydrogen Water BioStacking', category:'learn', badge:'Learn • YouTube • Human Life', desc:'BioStacking with Carbon 60 + H₂ — how hydrogen impacts gut & brain, reduces inflammation, supports human life.' },
     { id:'yt-SOmcolTnVCk', youtubeId:'SOmcolTnVCk', title:'Hydrogen Water — The Ultimate Guide', category:'learn', badge:'Learn • YouTube • Guide', desc:'Ultimate guide — deep dive into what H₂ water is, benefits you enjoy drinking it regularly, and human life support.' },
     { id:'yt-C4gIk3sX6dg', youtubeId:'C4gIk3sX6dg', title:'Does Water with Added Hydrogen Have More Benefits?', category:'learn', badge:'Learn • YouTube • Benefits', desc:'The Doctors — does water with added hydrogen have more benefits? Clinical discussion on disease support.' },
+    { id:'yt-93Pcv9ry7L8', youtubeId:'93Pcv9ry7L8', title:'Hydrogen Water Bottles: Your Questions Answered.', category:'learn', badge:'Learn • YouTube • Q&A', desc:'10 Years Younger — how bottles work, ppb, daily ritual. Educational.' },
+
   ];
 
   howtoCount = computed(()=> this.videos.filter(v=>v.category==='howto').length);
