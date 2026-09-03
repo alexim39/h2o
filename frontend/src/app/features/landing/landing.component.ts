@@ -10,8 +10,11 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [RouterLink],
   template: `
-    <!-- HERO — Cinematic Hydrogen Lab Video Simulation -->
+    <!-- HERO — Premium background video (265KB 6s) + cinematic canvas -->
     <section class="hero">
+      <video #heroVideo class="hero-video" autoplay muted loop playsinline preload="metadata" poster="/images/ultraH2.jpeg" aria-hidden="true">
+        <source src="/videos/background-vid.mp4" type="video/mp4">
+      </video>
       <canvas #heroCanvas class="hero-canvas" aria-hidden="true"></canvas>
       <div class="hero-video-overlay" aria-hidden="true">
         <div class="vignette"></div>
@@ -335,7 +338,11 @@ import { ToastService } from '../../core/services/toast.service';
   `,
   styles: [`
     .hero { position:relative; overflow:hidden; padding: 28px 0 0; border-bottom: 1px solid var(--border); isolation:isolate; background: #050507; }
-    .hero-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; opacity:1; }
+    .hero-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; z-index:0; opacity:0.52; filter: saturate(0.82) brightness(0.92) contrast(1.05) blur(0px); transform: scale(1.02); animation: heroVideoKenBurns 18s ease-in-out infinite alternate; }
+    @keyframes heroVideoKenBurns{ 0%{ transform: scale(1.02) translate(0,0); } 100%{ transform: scale(1.06) translate(-8px, 4px); } }
+    .hero-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:1; opacity:0.92; }
+    .hero-video-overlay, .hero-glow{ z-index:2; }
+    .hero-grid{ z-index:3; }
     .hero-video-overlay{ position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
     .hero-video-overlay .vignette{ position:absolute; inset:0; background: radial-gradient(820px 620px at 52% 48%, transparent 42%, rgba(0,0,0,0.42) 88%), linear-gradient(180deg, rgba(5,5,7,0.08) 0%, rgba(5,5,7,0.38) 100%); }
     .hero-video-overlay .grain{ position:absolute; inset:-10%; opacity:0.035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
@@ -349,7 +356,10 @@ import { ToastService } from '../../core/services/toast.service';
       radial-gradient(680px 520px at 68% 52%, rgba(0,255,136,0.05), transparent 62%),
       linear-gradient(180deg, rgba(7,8,10,0.0) 0%, rgba(5,5,7,0.18) 100%);
     }
-    @media (prefers-reduced-motion: reduce){ .hero-canvas, .hero-video-overlay .caustic{ display:none; } }
+    @media (prefers-reduced-motion: reduce){ .hero-video{ display:none; } .hero-canvas, .hero-video-overlay .caustic{ display:none; } }
+    @media (max-width: 640px){
+      .hero-video{ opacity:0.38; animation:none; transform:none; filter: saturate(0.78) brightness(0.88) contrast(1.04); }
+    }
     .hero-grid { position:relative; z-index:1; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; min-height: 640px; padding: 36px 24px 40px; }
 
     .health-hero{ margin-bottom: 14px; padding: 14px 16px; border-radius: 16px; border:1px solid rgba(0,255,136,0.14); background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,255,136,0.02)); position:relative; overflow:hidden; backdrop-filter: blur(8px); }
@@ -674,6 +684,7 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('heroCanvas', { static: false }) heroCanvas?: ElementRef<HTMLCanvasElement>;
   @ViewChild('bottleCanvas', { static: false }) bottleCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('heroVideo', { static: false }) heroVideo?: ElementRef<HTMLVideoElement>;
   private rafHero: number | null = null;
   private rafBottle: number | null = null;
   private resizeHandler = () => { this.resizeHero(); this.resizeBottle(); };
@@ -687,8 +698,56 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    requestAnimationFrame(() => setTimeout(() => { this.initHeroCanvas(); this.initBottleCanvas(); }, 220));
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saveData = (navigator as any).connection?.saveData;
+    const effectiveType = (navigator as any).connection?.effectiveType;
+    const isLowData = saveData || effectiveType === '2g' || effectiveType === 'slow-2g';
+    if (reduceMotion || isLowData) {
+      // still init canvases but video will stay paused (premium fallback)
+      requestAnimationFrame(() => setTimeout(() => { this.initHeroCanvas(); this.initBottleCanvas(); this.initHeroVideo(true); }, 220));
+      return;
+    }
+    requestAnimationFrame(() => setTimeout(() => { this.initHeroCanvas(); this.initBottleCanvas(); this.initHeroVideo(false); }, 220));
+  }
+
+  private initHeroVideo(paused: boolean): void {
+    const vid = this.heroVideo?.nativeElement;
+    if (!vid) return;
+    const parent = vid.parentElement as HTMLElement | null;
+    if (!parent) return;
+    // premium: low opacity handled via CSS, ensure video doesn't block LCP
+    vid.preload = 'metadata';
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.loop = true;
+    if (paused) {
+      vid.pause();
+      vid.style.display = 'none';
+      return;
+    }
+    // IntersectionObserver — play only when hero visible, pause off-screen (saves battery + cpu)
+    const io = new IntersectionObserver((entries) => {
+      const vis = entries[0]?.isIntersecting ?? true;
+      if (vis) {
+        const p = vid.play();
+        if (p) p.catch(() => {});
+      } else {
+        vid.pause();
+      }
+    }, { threshold: 0.12 });
+    io.observe(parent);
+    (this as any)._ioVideo = io;
+    // handle tab hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) vid.pause();
+      else if (parent.getBoundingClientRect().top < window.innerHeight && parent.getBoundingClientRect().bottom > 0) {
+        const pr = vid.play(); if (pr) pr.catch(()=>{});
+      }
+    });
+    // ensure autoplay if already visible
+    if (parent.getBoundingClientRect().top < window.innerHeight) {
+      const pr = vid.play(); if (pr) pr.catch(()=>{});
+    }
   }
 
   ngOnDestroy(): void {
@@ -697,6 +756,8 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     window.removeEventListener('resize', this.resizeHandler);
     const io = (this as any)._io as IntersectionObserver | undefined;
     if (io) io.disconnect();
+    const ioV = (this as any)._ioVideo as IntersectionObserver | undefined;
+    if (ioV) ioV.disconnect();
   }
 
   private resizeHero(): void {}
