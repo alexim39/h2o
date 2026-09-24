@@ -52,7 +52,7 @@ import { ToastService } from '../../core/services/toast.service';
             </a>
           </div>
           <div class="other-products">
-            <a routerLink="/store" class="btn-ghost other-btn">See Other Products — From ₦40,000 upward</a>
+            <a routerLink="/store" class="btn-ghost other-btn">See Other Products — From ₦98,000 upward</a>
             <span class="free-ship">✓ Free shipping on all orders</span>
           </div>
 

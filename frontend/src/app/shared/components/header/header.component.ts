@@ -35,7 +35,7 @@ import { CartService } from '../../../core/services/cart.service';
               <span class="badge">{{ cartCount() }}</span>
             }
           </button>
-          <a routerLink="/store" class="btn-neon sm hide-m">Shop — {{ priceLabel() }}</a>
+          <a routerLink="/store" class="btn-neon sm hide-m">Visit Store</a>
           <button class="hamburger" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" aria-label="Menu">
             <span></span><span></span><span></span>
           </button>
@@ -120,7 +120,6 @@ export class HeaderComponent {
   menuOpen = signal(false);
   private cart = inject(CartService);
   cartCount = computed(() => this.cart.count());
-  priceLabel = computed(() => this.cart.formatNGN(1300000));
   toggleMenu(): void { this.menuOpen.update(v => !v); }
   closeMenu(): void { this.menuOpen.set(false); }
 }
