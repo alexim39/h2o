@@ -52,6 +52,7 @@ use App\Controllers\PaymentController;
 use App\Controllers\ReviewController;
 use App\Controllers\ChatController;
 use App\Controllers\AdminController;
+use App\Controllers\CouponController;
 
 // 3) CORS — allow hydrogenwaterbottles.store + localhost, always send headers on OPTIONS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -71,7 +72,7 @@ if ($allowOrigin !== null) {
     header('Vary: Origin');
     header('Access-Control-Allow-Credentials: false');
 }
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Paystack-Signature');
 header('Access-Control-Max-Age: 86400');
 header('Access-Control-Expose-Headers: Content-Type');
@@ -149,6 +150,8 @@ $router->post('/chat', [ChatController::class, 'chat']);
 $router->get('/orders', [OrderController::class, 'index']);
 $router->post('/orders', [OrderController::class, 'store']);
 $router->get('/orders/{reference}', [OrderController::class, 'show']);
+$router->put('/orders/{reference}/status', [OrderController::class, 'updateStatus']);
+$router->patch('/orders/{reference}/status', [OrderController::class, 'updateStatus']);
 
 $router->post('/payments/initialize', [PaymentController::class, 'initialize']);
 $router->get('/payments/verify/{reference}', [PaymentController::class, 'verify']);
@@ -161,6 +164,13 @@ $router->delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
 $router->post('/admin/login', [AdminController::class, 'login']);
 $router->get('/admin/me', [AdminController::class, 'me']);
+$router->post('/admin/logout', [AdminController::class, 'logout']);
+$router->get('/admin/low-stock', [AdminController::class, 'lowStock']);
+$router->get('/admin/analytics', [AdminController::class, 'analytics']);
+
+$router->post('/coupons/validate', [CouponController::class, 'validate']);
+$router->get('/coupons', [CouponController::class, 'index']);
+$router->post('/coupons', [CouponController::class, 'store']);
 
 // Test email — premium luxury template preview (admin only, requires ?to=email or ?secret)
 $router->get('/test-email', function (Request $r) {

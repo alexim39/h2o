@@ -36,14 +36,15 @@ export class PaystackService {
     });
   }
 
-  async initialize(shipping: ShippingDetails, email: string): Promise<PaystackInitResponse> {
+  async initialize(shipping: ShippingDetails, email: string, opts?: { coupon?: string; reference?: string }): Promise<PaystackInitResponse> {
     this.loading.set(true);
     const items = this.cart.items();
     const amount = this.cart.paystackAmount();
-    const reference = `HYDRO_${Date.now()}_${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+    const reference = opts?.reference || `HYDRO_${Date.now()}_${Math.random().toString(36).slice(2,7).toUpperCase()}`;
     this.lastReference.set(reference);
 
-    const payload = { email, amount, reference, items, shipping, currency: 'NGN' };
+    const payload: any = { email, amount, reference, items, shipping, currency: 'NGN' };
+    if (opts?.coupon) payload.coupon = opts.coupon;
 
     try {
       const res = await firstValueFrom(

@@ -141,4 +141,34 @@ CREATE TABLE IF NOT EXISTS `admins` (
   UNIQUE KEY `uq_admins_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------
+-- admin_sessions — token auth (12h)
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `admin_sessions` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `admin_id` BIGINT UNSIGNED NOT NULL,
+  `token` CHAR(64) NOT NULL COMMENT 'sha256 of token',
+  `expires_at` DATETIME NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_session_token` (`token`),
+  KEY `idx_session_admin` (`admin_id`),
+  CONSTRAINT `fk_session_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------
+-- coupons — % off, optional min_total + expiry
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `coupons` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(32) NOT NULL,
+  `percent` TINYINT UNSIGNED NOT NULL DEFAULT 10 COMMENT '1-90',
+  `min_total` INT UNSIGNED NOT NULL DEFAULT 0,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `expires_at` DATETIME NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_coupon_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;

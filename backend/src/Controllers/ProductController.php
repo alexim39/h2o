@@ -91,9 +91,10 @@ final class ProductController
         ];
     }
 
-    // ─── MGT Admin: Create ───
+    // ─── MGT Admin: Create (admin token required) ───
     public function store(Request $req): void
     {
+        \App\Core\Auth::requireAdmin($req);
         $body = $req->body ?? [];
         $name = trim((string)($body['name'] ?? ''));
         $brand = trim((string)($body['brand'] ?? 'H2Os'));
@@ -149,6 +150,7 @@ final class ProductController
 
     public function update(Request $req, string $id): void
     {
+        \App\Core\Auth::requireAdmin($req);
         $body = $req->body ?? [];
         $pdo = Database::connection();
         $fields = [];
@@ -206,6 +208,7 @@ final class ProductController
 
     public function destroy(Request $req, string $id): void
     {
+        \App\Core\Auth::requireAdmin($req);
         Database::execute('DELETE FROM products WHERE sku=:id OR id=:id', ['id'=>$id]);
         Response::success(null, 'Product deleted');
     }

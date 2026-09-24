@@ -35,20 +35,15 @@ final class PaymentController
         if ($amount < 10000) Response::error('Invalid amount', 422); // at least NGN 100
         if ($reference === '') $reference = 'H2OS_' . time() . '_' . strtoupper(bin2hex(random_bytes(3)));
 
-        // Recompute expected amount server-side from real DB prices
+        // Recompute expected amount via central PricingService (includes coupon)
         if (is_array($items) && !empty($items)) {
-            $rows = Database::fetchAll('SELECT variant_key, price FROM product_variants WHERE is_active = 1');
-            $priceMap = [];
-            foreach ($rows as $r) $priceMap[$r['variant_key']] = (int)$r['price'];
-            $expected = 0;
-            foreach ($items as $it) {
-                $vid = $it['variantId'] ?? '';
-                $qty = (int)($it['qty'] ?? 0);
-                if (isset($priceMap[$vid])) $expected += $priceMap[$vid] * $qty;
-            }
-            if ($expected > 0) {
-                $expectedKobo = $expected * 100;
+            try {
+                $coupon = isset($body['coupon']) ? trim((string)$body['coupon']) : null;
+                $calc = \App\Services\PricingService::totals($items, $coupon ?: null);
+                $expectedKobo = $calc['total'] * 100;
                 if (abs($expectedKobo - $amount) > 100) $amount = $expectedKobo;
+            } catch (\RuntimeException $e) {
+                Response::error($e->getMessage(), $e->getCode() >= 400 ? $e->getCode() : 422);
             }
         }
 
@@ -108,10 +103,8 @@ final class PaymentController
         $rawBody = $req->rawBody;
 
         if (!$this->paystack->verifyWebhookSignature($rawBody, (string)$signature)) {
-            // Log but still return 200 to avoid Paystack retries storm — but mark as failed verification
-            error_log('[Webhook] Invalid signature: ' . $signature);
-            // Optionally: Response::error('Invalid signature', 401);
-            // For production you SHOULD reject. We log and still process in mock/test.
+            error_log('[Webhook] Invalid signature rejected: ' . substr((string)$signature, 0, 16));
+            Response::error('Invalid webhook signature', 401);
         }
 
         $payload = json_decode($rawBody, true);
@@ -130,13 +123,11 @@ final class PaymentController
                     ['pr'=>$ref, 'ref'=>$ref]
                 );
                 $didUpdate = !$wasPaid;
-                if (Database::connection() !== null) {
-                    Database::execute(
-                        'INSERT INTO paystack_transactions (reference, event, amount, raw_json, created_at) VALUES (:ref,:evt,:amt,:raw,NOW())
-                         ON DUPLICATE KEY UPDATE event=:evt2, raw_json=:raw2',
-                        ['ref'=>$ref,'evt'=>$event,'amt'=>$amount,'raw'=>$rawBody,'evt2'=>$event,'raw2'=>$rawBody]
-                    );
-                }
+                Database::execute(
+                    'INSERT INTO paystack_transactions (reference, event, amount, raw_json, created_at) VALUES (:ref,:evt,:amt,:raw,NOW())
+                     ON DUPLICATE KEY UPDATE event=:evt2, raw_json=:raw2',
+                    ['ref'=>$ref,'evt'=>$event,'amt'=>$amount,'raw'=>$rawBody,'evt2'=>$event,'raw2'=>$rawBody]
+                );
             } catch (\Throwable $e) {
                 error_log('[Webhook] DB update failed: ' . $e->getMessage());
             }
@@ -171,6 +162,8 @@ final class PaymentController
                 $mailer->sendUserPaidConfirmation($payload, $email);
             }
             $mailer->sendAdminPaidAlert($payload);
+            // Decrement stock once on paid + low-stock log
+            \App\Services\PricingService::decrementStock($payload['items']);
         } catch (\Throwable $e) {
             error_log('[Paid email] ' . $e->getMessage());
         }

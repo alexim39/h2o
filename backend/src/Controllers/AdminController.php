@@ -42,16 +42,50 @@ final class AdminController
             try { Database::execute('UPDATE admins SET password_hash = :h WHERE id = :id', ['h' => $newHash, 'id' => $row['id']]); } catch (\Throwable) {}
         }
 
-        Response::success(['username' => $row['username']], 'Login successful');
+        $token = \App\Core\Auth::issue((int)$row['id'], $row['username']);
+        Response::success(['username' => $row['username'], 'token' => $token, 'expiresIn' => 12 * 3600], 'Login successful');
     }
 
     public function me(Request $req): void
     {
-        // Simple check — frontend calls to verify session; for stateless we just require username
-        $username = trim((string)($req->query['username'] ?? ''));
-        if ($username === '') Response::error('Username required', 422);
-        $row = Database::fetchOne('SELECT id, username FROM admins WHERE username = :u LIMIT 1', ['u' => $username]);
-        if (!$row) Response::error('Not found', 404);
-        Response::success($row);
+        $admin = \App\Core\Auth::requireAdmin($req);
+        Response::success(['username' => $admin['username']]);
+    }
+
+    public function logout(Request $req): void
+    {
+        $auth = $req->header('authorization', '');
+        if (str_starts_with(strtolower($auth), 'bearer ')) {
+            \App\Core\Auth::revoke(trim(substr($auth, 7)));
+        }
+        Response::success(null, 'Logged out');
+    }
+
+    public function lowStock(Request $req): void
+    {
+        \App\Core\Auth::requireAdmin($req);
+        $threshold = max(1, min(100, (int)($req->query['threshold'] ?? 15)));
+        $rows = Database::fetchAll(
+            'SELECT v.variant_key, v.name, v.sku, v.stock, v.price, p.sku as product_sku, p.name as product_name FROM product_variants v JOIN products p ON p.id = v.product_id WHERE v.is_active = 1 AND v.stock <= :t ORDER BY v.stock ASC',
+            ['t' => $threshold]
+        );
+        Response::success(['threshold' => $threshold, 'items' => $rows, 'count' => count($rows)]);
+    }
+
+    public function analytics(Request $req): void
+    {
+        \App\Core\Auth::requireAdmin($req);
+        $orders = Database::fetchOne('SELECT COUNT(*) c, COALESCE(SUM(CASE WHEN status = "paid" THEN total ELSE 0 END),0) revenue, COALESCE(SUM(total),0) gmv FROM orders');
+        $products = Database::fetchOne('SELECT COUNT(*) c FROM products WHERE is_active = 1');
+        $reviews = Database::fetchOne('SELECT COUNT(*) c FROM reviews WHERE is_approved = 1');
+        $low = Database::fetchOne('SELECT COUNT(*) c FROM product_variants WHERE is_active = 1 AND stock <= 15');
+        Response::success([
+            'orders' => (int)($orders['c'] ?? 0),
+            'revenue_paid' => (int)($orders['revenue'] ?? 0),
+            'gmv' => (int)($orders['gmv'] ?? 0),
+            'products' => (int)($products['c'] ?? 0),
+            'reviews' => (int)($reviews['c'] ?? 0),
+            'low_stock' => (int)($low['c'] ?? 0),
+        ]);
     }
 }

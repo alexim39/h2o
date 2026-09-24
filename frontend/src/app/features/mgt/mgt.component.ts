@@ -11,7 +11,7 @@ import { CartService } from '../../core/services/cart.service';
 import { DeepseekService } from '../../core/services/deepseek.service';
 import { environment } from '../../../environments/environment';
 
-type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
+type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons';
 
 @Component({
   selector: 'app-mgt',
@@ -63,17 +63,26 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
                 <button class="btn-neon sm" (click)="tab.set('products')">Manage →</button>
               </div>
               <div class="stat-card glass">
-                <span>Free Shipping</span><strong>✓ Active</strong><em>All orders</em>
+                <span>Revenue (paid)</span><strong>{{ analytics() ? cart.formatNGN(analytics().revenue_paid) : '—' }}</strong><em>{{ analytics()?.orders ?? orders().length }} orders</em>
+                <button class="btn-ghost sm" (click)="tab.set('orders')">Fulfil →</button>
               </div>
               <div class="stat-card glass">
                 <span>Community</span><strong>{{ review.count() }}</strong><em>Reviews</em>
                 <button class="btn-ghost sm" (click)="tab.set('reviews')">Moderate →</button>
               </div>
               <div class="stat-card glass">
-                <span>AI Escalations</span><strong>WhatsApp</strong><em>+2348080386208</em>
-                <a [href]="waLink()" target="_blank" class="btn-ghost sm">Open →</a>
+                <span>Low stock ≤{{ lowThreshold() }}</span><strong>{{ lowStock().length }}</strong><em>variants need restock</em>
+                <button class="btn-ghost sm" (click)="loadLowStock()">Refresh</button>
               </div>
             </div>
+            @if (lowStock().length) {
+              <div class="panel glass alert-stock">
+                <h3>⚠ Low stock alert</h3>
+                @for (s of lowStock(); track s.variant_key) {
+                  <p class="muted">{{ s.product_name || s.variant_key }} — {{ s.sku }}: <strong>{{ s.stock }} left</strong></p>
+                }
+              </div>
+            }
 
             <div class="overview-panels">
               <div class="panel glass">
@@ -177,21 +186,25 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
 
           @if (tab()==='orders') {
             <div class="panel glass">
-              <h2>Orders — Real (Paystack) • Free shipping</h2>
+              <h2>Orders — Fulfilment • Free shipping</h2>
               @if (ordersLoading()) { <p class="muted">Loading orders…</p> }
               @if (ordersError()) { <div class="error">{{ ordersError() }}</div> }
               @if (!ordersLoading() && !orders().length) { <p class="muted">No orders yet — real DB only.</p> }
               <div class="order-list">
                 @for (o of orders(); track o.reference) {
                   <div class="order-row glass">
-                    <div><strong>{{ o.reference }}</strong><span class="muted">{{ o.email }}</span></div>
+                    <div><strong>{{ o.reference }}</strong><span class="muted">{{ o.email }} • {{ o.createdAt || o.created_at }}</span></div>
                     <span class="status paid">{{ o.status }}</span>
                     <strong>{{ cart.formatNGN(o.total) }}</strong>
-                    <span class="muted">{{ o.created_at?.slice(0,10) }}</span>
+                    <div class="row-actions">
+                      @for (st of ['processing','shipped','delivered','cancelled']; track st) {
+                        <button class="btn-ghost sm" [disabled]="o.status===st" (click)="setOrderStatus(o.reference, st)">{{ st }}</button>
+                      }
+                    </div>
                   </div>
                 }
               </div>
-              <p class="hint">Real orders via POST /api/orders + Paystack webhook. Free shipping applied (0).</p>
+              <p class="hint">Paid → stock auto-decrements. Update to processing → shipped → delivered.</p>
             </div>
           }
 
@@ -214,6 +227,23 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats';
                 <button class="btn-ghost sm" (click)="review.prevPage()" [disabled]="review.page()===1">← Prev</button>
                 <span>{{ review.page() }} / {{ review.totalPages() }}</span>
                 <button class="btn-ghost sm" (click)="review.nextPage()" [disabled]="review.page()===review.totalPages()">Next →</button>
+              </div>
+            </div>
+          }
+
+          @if (tab()==='coupons') {
+            <div class="panel glass">
+              <h2>Coupons — % off</h2>
+              <form class="form grid2" (ngSubmit)="saveCoupon()">
+                <div class="group"><label>Code *</label><input [(ngModel)]="couponForm.code" name="ccode" placeholder="H2OS10" style="text-transform:uppercase" /></div>
+                <div class="group"><label>Percent *</label><input type="number" [(ngModel)]="couponForm.percent" name="cpercent" min="1" max="90" /></div>
+                <div class="group"><label>Min total NGN</label><input type="number" [(ngModel)]="couponForm.min_total" name="cmin" /></div>
+                <div class="form-actions full"><button type="submit" class="btn-neon sm">Save coupon</button></div>
+              </form>
+              <div class="review-list">
+                @for (c of coupons(); track c.code) {
+                  <div class="review-row"><div><strong>{{ c.code }} — {{ c.percent }}%</strong><p class="muted">min {{ cart.formatNGN(c.min_total) }} • {{ c.is_active ? 'active' : 'off' }}</p></div></div>
+                }
               </div>
             </div>
           }
@@ -363,6 +393,7 @@ export class MgtComponent implements OnInit {
     {id:'products', label:'Products'},
     {id:'orders', label:'Orders'},
     {id:'reviews', label:'Reviews'},
+    {id:'coupons', label:'Coupons'},
     {id:'media', label:'Media'},
     {id:'chats', label:'Chats'},
   ];
@@ -374,29 +405,105 @@ export class MgtComponent implements OnInit {
   orders = signal<any[]>([]);
   ordersLoading = signal(false);
   ordersError = signal<string | null>(null);
+  analytics = signal<any | null>(null);
+  lowStock = signal<any[]>([]);
+  lowThreshold = signal(15);
+  coupons = signal<any[]>([]);
+  couponForm: any = { code: '', percent: 10, min_total: 0, is_active: true };
 
   ngOnInit(): void {
     this.loadProducts();
     this.loadOrders();
+    this.loadAnalytics();
+    this.loadLowStock();
+    this.loadCoupons();
   }
 
   loadProducts(): void { this.product.loadCatalog(); }
   async loadOrders(): Promise<void> {
     this.ordersLoading.set(true); this.ordersError.set(null);
     try {
-      const res: any = await fetch(`${environment.apiUrl}/orders`).then(r => r.json()).catch(() => null);
-      // fallback to HttpClient if fetch fails (CORS)
-      let data = res?.data ?? res;
-      if (!data) {
-        const fetched: any = await new Promise((resolve, reject) => {
-          this.http.get(`${environment.apiUrl}/orders`).subscribe({ next: v => resolve(v), error: e => reject(e) });
-        }).catch(() => null);
-        data = (fetched as any)?.data ?? fetched;
-      }
-      this.orders.set(Array.isArray(data) ? data : []);
+      const fetched: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/orders`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const data = (fetched as any)?.data ?? fetched;
+      const list = Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []);
+      this.orders.set(list);
     } catch (e: any) {
-      this.ordersError.set(e?.message ?? 'Failed to load orders');
+      this.ordersError.set(e?.error?.message || 'Failed to load orders — admin login required');
+      this.orders.set([]);
     } finally { this.ordersLoading.set(false); }
+  }
+
+  async setOrderStatus(ref: string, status: string): Promise<void> {
+    try {
+      await new Promise((resolve, reject) => {
+        this.http.put(`${environment.apiUrl}/orders/${encodeURIComponent(ref)}/status`, { status }).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.toast.show(`${ref} → ${status}`, 'success');
+      this.loadOrders(); this.loadAnalytics();
+    } catch (e: any) {
+      this.toast.show(e?.error?.message || 'Status update failed', 'error');
+    }
+  }
+
+  async loadAnalytics(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/admin/analytics`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.analytics.set((res as any)?.data ?? res);
+    } catch {}
+  }
+
+  async loadLowStock(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/admin/low-stock?threshold=${this.lowThreshold()}`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const d = (res as any)?.data ?? res;
+      this.lowStock.set(d?.items ?? []);
+    } catch {}
+  }
+
+  async loadCoupons(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/coupons`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const d = (res as any)?.data ?? res;
+      this.coupons.set(Array.isArray(d) ? d : []);
+    } catch {}
+  }
+
+  async saveCoupon(): Promise<void> {
+    if (!this.couponForm.code) { this.toast.show('Code required', 'error'); return; }
+    try {
+      await new Promise((resolve, reject) => {
+        this.http.post(`${environment.apiUrl}/coupons`, { ...this.couponForm, code: this.couponForm.code.toUpperCase() }).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.toast.show('Coupon saved', 'success');
+      this.couponForm = { code: '', percent: 10, min_total: 0, is_active: true };
+      this.loadCoupons();
+    } catch (e: any) {
+      this.toast.show(e?.error?.message || 'Save failed', 'error');
+    }
+  }
+
+  buildPayload(): any {
+    const id = this.editId() || (this.form.brand.toLowerCase().replace(/\s+/g,'-') + '-' + this.form.name.toLowerCase().replace(/\s+/g,'-') + '-' + Date.now().toString(36));
+    const imgs = this.form.imagesText ? this.form.imagesText.split(/\n/).map((s:string)=>s.trim()).filter(Boolean) : [];
+    const vids = this.form.videosText ? this.form.videosText.split(/\n/).map((s:string)=>s.trim()).filter(Boolean) : [];
+    const allImages = [this.form.image, ...imgs].filter(Boolean);
+    return {
+      id, sku: id, brand:this.form.brand, name:this.form.name, category:this.form.category||'Hydrogen Bottle', badge:this.form.badge||undefined,
+      tagline:this.form.tagline||'', description:this.form.description||'', image:this.form.image||'/images/ultraH2.jpeg',
+      images: allImages, videos: vids,
+      price: +this.form.price, compareAt: this.form.compareAt? +this.form.compareAt : undefined,
+      stock: +this.form.stock, rating:+this.form.rating||4.8,
+      variants:[{ variant_key: id, name:this.form.name, finish: this.form.tagline || 'H2Os • Advanced', hex:'#0FD8B8', price:+this.form.price, compareAt: this.form.compareAt? +this.form.compareAt : null, sku: id.toUpperCase().replace(/-/g,'_') + '_500', stock:+this.form.stock, image:this.form.image, gradient:'linear-gradient(145deg,#0A0E14,#111A1E)' }],
+      specs: [], features: []
+    };
   }
 
   async doLogin() {
@@ -484,19 +591,8 @@ export class MgtComponent implements OnInit {
     if (!this.form.name || !this.form.brand || !this.form.price) {
       this.toast.show('Brand, name and price required', 'error'); return;
     }
-    const id = this.editId() || (this.form.brand.toLowerCase().replace(/\\s+/g,'-') + '-' + this.form.name.toLowerCase().replace(/\\s+/g,'-') + '-' + Date.now().toString(36));
-    const imgs = this.form.imagesText ? this.form.imagesText.split(/\n/).map((s:string)=>s.trim()).filter(Boolean) : [];
-    const vids = this.form.videosText ? this.form.videosText.split(/\n/).map((s:string)=>s.trim()).filter(Boolean) : [];
-    const allImages = [this.form.image, ...imgs].filter(Boolean);
-    const payload: any = {
-      id, sku: id, brand:this.form.brand, name:this.form.name, category:this.form.category||'Hydrogen Bottle', badge:this.form.badge||undefined,
-      tagline:this.form.tagline||'', description:this.form.description||'', image:this.form.image||'/images/ultraH2.jpeg',
-      images: allImages, videos: vids,
-      price: +this.form.price, compareAt: this.form.compareAt? +this.form.compareAt : undefined,
-      stock: +this.form.stock, rating:+this.form.rating||4.8,
-      variants:[{ variant_key: id, name:this.form.name, finish: this.form.tagline || 'H2Os • Advanced', hex:'#0FD8B8', price:+this.form.price, compareAt: this.form.compareAt? +this.form.compareAt : null, sku: id.toUpperCase().replace(/-/g,'_') + '_500', stock:+this.form.stock, image:this.form.image, gradient:'linear-gradient(145deg,#0A0E14,#111A1E)' }],
-      specs: [], features: []
-    };
+    const payload: any = this.buildPayload();
+    const id = this.editId() || payload.id;
     try {
       if (this.editId()) {
         await this.product.updateProductApi(id, payload);
@@ -507,7 +603,7 @@ export class MgtComponent implements OnInit {
       }
       this.editing.set(false);
     } catch (e: any) {
-      this.toast.show(e?.error?.message || 'Save failed — check DB', 'error');
+      this.toast.show(e?.error?.message || 'Save failed — admin login required', 'error');
     }
   }
 

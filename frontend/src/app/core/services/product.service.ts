@@ -42,6 +42,10 @@ export class ProductService {
 
   selectedVariantFallback(): Variant { return this.selectedVariant(); }
 
+  private readonly _loaded = signal(false);
+  readonly loaded = this._loaded.asReadonly();
+  readonly isPlaceholder = computed(() => this._product().id === this._placeholder.id && !this._catalog().some(p => p.id === this._placeholder.id));
+
   async loadCatalog(): Promise<void> {
     this._loading.set(true); this._error.set(null);
     try {
@@ -49,14 +53,21 @@ export class ProductService {
       const data = res?.data ?? res;
       const list: Product[] = Array.isArray(data) ? data : (data ? [data] : []);
       this._catalog.set(list);
-      if (list.length && !this._product()) {
-        this._product.set(list[0]);
-        this._selectedId.set(list[0].variants[0]?.id ?? 'ultra-h2');
+      this._loaded.set(true);
+      if (list.length) {
+        const curId = this._product().id;
+        const stillThere = list.some(p => p.id === curId);
+        if (!stillThere) {
+          this._product.set(list[0]);
+          this._selectedId.set(list[0].variants[0]?.id ?? 'ultra-h2');
+        }
+      } else {
+        this._error.set('No products yet — add via MGT');
       }
-      if (!list.length) this._error.set('No products yet — add via MGT');
     } catch (e: any) {
-      this._error.set(e?.error?.message ?? 'Failed to load catalog');
+      this._error.set(e?.error?.message ?? 'Failed to load catalog — check API');
       this._catalog.set([]);
+      this._loaded.set(true);
     } finally { this._loading.set(false); }
   }
 

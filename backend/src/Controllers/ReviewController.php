@@ -60,4 +60,11 @@ final class ReviewController
             'anonymous' => $anonymous || $name === '',
         ], 'Review posted', 201);
     }
+
+    public function destroy(Request $req, string $id): void
+    {
+        \App\Core\Auth::requireAdmin($req);
+        Database::execute('DELETE FROM reviews WHERE id = :id', ['id' => $id]);
+        Response::success(null, 'Review deleted');
+    }
 }

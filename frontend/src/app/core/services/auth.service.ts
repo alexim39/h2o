@@ -5,6 +5,7 @@ import { firstValueFrom, catchError, of } from 'rxjs';
 
 const AUTH_KEY = 'h2os_mgt_auth_v1';
 const AUTH_USER_KEY = 'h2os_mgt_user_v1';
+const TOKEN_KEY = 'h2os_mgt_token_v1';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -16,13 +17,17 @@ export class AuthService {
   readonly isAdmin = computed(() => this._authed());
 
   private load(): boolean {
-    try { return localStorage.getItem(AUTH_KEY) === '1'; } catch { return false; }
+    try { return localStorage.getItem(AUTH_KEY) === '1' && !!localStorage.getItem(TOKEN_KEY); } catch { return false; }
   }
   private loadUser(): string | null {
     try { return localStorage.getItem(AUTH_USER_KEY); } catch { return null; }
   }
 
-  /** DB-managed login — POST /admin/login {username,password} */
+  token(): string | null {
+    try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
+  }
+
+  /** DB-managed login — POST /admin/login returns {token} */
   async login(user: string, pass: string): Promise<boolean> {
     const username = user.trim();
     const password = pass;
@@ -31,30 +36,35 @@ export class AuthService {
       const res: any = await firstValueFrom(
         this.http.post(`${environment.apiUrl}/admin/login`, { username, password }).pipe(catchError(() => of(null)))
       );
-      // Backend returns {status:true, data:{username}} on success, {status:false} on 401
-      const ok = !!(res && res.status === true);
+      const ok = !!(res && res.status === true && res.data?.token);
       if (ok) {
         this._authed.set(true);
         this._user.set(res.data?.username ?? username);
         try {
           localStorage.setItem(AUTH_KEY, '1');
           localStorage.setItem(AUTH_USER_KEY, res.data?.username ?? username);
+          localStorage.setItem(TOKEN_KEY, res.data.token);
         } catch {}
         return true;
       }
-      // Fallback: if API unreachable but local DB not yet seeded, allow legacy env check via API already handled server-side
+      this.logout();
       return false;
     } catch {
       return false;
     }
   }
 
-  // Keep sync wrapper for guards that expect boolean quickly (checks localStorage only)
-  check(): boolean { return this._authed(); }
+  check(): boolean { return this._authed() && !!this.token(); }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    const t = this.token();
+    if (t) {
+      try {
+        await firstValueFrom(this.http.post(`${environment.apiUrl}/admin/logout`, {}).pipe(catchError(() => of(null))));
+      } catch {}
+    }
     this._authed.set(false);
     this._user.set(null);
-    try { localStorage.removeItem(AUTH_KEY); localStorage.removeItem(AUTH_USER_KEY); } catch {}
+    try { localStorage.removeItem(AUTH_KEY); localStorage.removeItem(AUTH_USER_KEY); localStorage.removeItem(TOKEN_KEY); } catch {}
   }
 }

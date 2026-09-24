@@ -13,6 +13,13 @@ import { ShippingDetails } from '../../core/models/cart.model';
   imports: [FormsModule, RouterLink],
   template: `
     <section class="section">
+      <div class="container">
+        <div class="steps glass">
+          <span [class.active]="true">1 Shipping</span><span>→</span>
+          <span [class.active]="false">2 Pay</span><span>→</span>
+          <span>3 Done</span>
+        </div>
+      </div>
       <div class="container checkout-grid">
         <!-- Form -->
         <div class="form-card glass">
@@ -46,6 +53,16 @@ import { ShippingDetails } from '../../core/models/cart.model';
             </div>
 
             <div class="group"><label>Notes (optional)</label><textarea [(ngModel)]="shipping.notes" name="notes" rows="2" placeholder="Gate code, delivery instructions..."></textarea></div>
+
+            <div class="group coupon-row">
+              <label>Coupon (optional)</label>
+              <div class="coupon-input">
+                <input [(ngModel)]="coupon" name="coupon" placeholder="H2OS10" style="text-transform:uppercase" />
+                <button type="button" class="btn-ghost sm" (click)="applyCoupon()" [disabled]="couponLoading()">Apply</button>
+              </div>
+              @if (couponMsg()) { <p class="muted small">{{ couponMsg() }}</p> }
+              @if (couponError()) { <div class="error">{{ couponError() }}</div> }
+            </div>
 
             @if (error()) { <div class="error">{{ error() }}</div> }
 
@@ -96,6 +113,11 @@ import { ShippingDetails } from '../../core/models/cart.model';
     </section>
   `,
   styles: [`
+    .steps{ display:flex; gap:10px; align-items:center; justify-content:center; border-radius:999px; padding:10px 14px; margin-bottom:16px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
+    .steps span.active{ color:var(--neon); font-weight:800; }
+    .coupon-row .coupon-input{ display:flex; gap:8px; }
+    .coupon-input input{ flex:1; background: rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; padding:10px 12px; color:var(--text-primary); font-size:13px; outline:none; }
+    .small{ font-size:11px; }
     .checkout-grid{ display:grid; grid-template-columns: 1.2fr 0.8fr; gap:24px; align-items:start; }
     .form-card{ border-radius:24px; padding:26px; }
     .form-card h1{ font-family:'Space Grotesk',sans-serif; font-size:26px; letter-spacing:-0.02em; margin:8px 0 6px; }
@@ -143,6 +165,11 @@ export class CheckoutComponent {
 
   loading = signal(false);
   error = signal<string | null>(null);
+  coupon = '';
+  couponLoading = signal(false);
+  couponMsg = signal<string | null>(null);
+  couponError = signal<string | null>(null);
+  couponDiscount = signal(0);
 
   nigeriaStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT - Abuja'];
 
@@ -156,6 +183,29 @@ export class CheckoutComponent {
     country: 'Nigeria',
     notes: ''
   };
+
+  async applyCoupon() {
+    this.couponMsg.set(null); this.couponError.set(null);
+    const code = this.coupon.trim().toUpperCase();
+    if (!code) return;
+    this.couponLoading.set(true);
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.api.validateCoupon(code, this.cart.total()).subscribe({ next: (v: any) => resolve(v), error: (e: any) => reject(e) });
+      });
+      const d = res?.data ?? res;
+      if (d?.percent) {
+        const discount = d.discount ?? Math.round(this.cart.total() * d.percent / 100);
+        this.couponDiscount.set(discount);
+        this.couponMsg.set(`${d.code} applied — ${d.percent}% off (−${this.cart.formatNGN(discount)})`);
+      } else {
+        this.couponError.set('Coupon invalid.');
+      }
+    } catch (e: any) {
+      this.couponError.set(e?.error?.message || 'Invalid or expired coupon.');
+      this.couponDiscount.set(0);
+    } finally { this.couponLoading.set(false); }
+  }
 
   async pay() {
     this.error.set(null);
@@ -172,30 +222,23 @@ export class CheckoutComponent {
     try {
       const email = s.email.trim();
       const reference = `HYDRO_${Date.now()}_${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+      const couponCode = this.coupon.trim().toUpperCase() || undefined;
 
-      // 1) Try to create order via API (non-blocking — mock ok)
-      try {
-        await new Promise<void>((resolve) => {
-          this.api.createOrder({ items: this.cart.items(), shipping: s, reference, total: this.cart.total() }).subscribe({
-            next: () => resolve(),
-            error: () => resolve()
-          });
-          setTimeout(() => resolve(), 1200);
+      // 1) Create order (blocking — must succeed, carries coupon)
+      await new Promise<void>((resolve, reject) => {
+        let settled = false;
+        const done = (fn: () => void) => { if (!settled) { settled = true; fn(); } };
+        this.api.createOrder({ items: this.cart.items(), shipping: s, reference, total: this.cart.total(), coupon: couponCode }).subscribe({
+          next: () => done(() => resolve()),
+          error: (e: any) => done(() => reject(e))
         });
-      } catch {}
+        setTimeout(() => done(() => resolve()), 8000);
+      });
 
-      // 2) Initialize Paystack (backend or mock)
-      const init = await this.paystack.initialize(s, email);
+      // 2) Initialize Paystack with SAME reference + coupon
+      const init = await this.paystack.initialize(s, email, { coupon: couponCode, reference });
 
-      // If mock URL (starts with mock://), simulate Paystack success without popup
-      if (init.data.authorization_url.startsWith('mock://')) {
-        // Simulate processing delay then verify
-        await new Promise(r => setTimeout(r, 900));
-        await this.handleSuccess(init.data.reference);
-        return;
-      }
-
-      // 3) Real Paystack popup
+      // 3) Real Paystack popup (no mock fallback — backend is live)
       await this.paystack.payWithInline(
         email,
         this.cart.paystackAmount(),

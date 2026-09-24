@@ -16,6 +16,22 @@ export class ApiService {
   }
 
   getOrder(ref: string): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/orders/${ref}`);
+    return this.http.get(`${environment.apiUrl}/orders/${encodeURIComponent(ref)}`);
+  }
+
+  validateCoupon(code: string, subtotal: number): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/coupons/validate`, { code, subtotal });
+  }
+
+  updateOrderStatus(ref: string, status: string): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/orders/${encodeURIComponent(ref)}/status`, { status });
+  }
+
+  getLowStock(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/admin/low-stock`);
+  }
+
+  getAnalytics(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/admin/analytics`);
   }
 }

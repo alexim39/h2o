@@ -69,7 +69,22 @@ export const routes: Routes = [
     title: 'Order Confirmed — H2Os Ultra H₂'
   },
   {
+    path: 'track',
+    loadComponent: () => import('./features/track/track.component').then(m => m.TrackComponent),
+    title: 'Track Order — H2Os'
+  },
+  {
+    path: 'track/:ref',
+    loadComponent: () => import('./features/track/track.component').then(m => m.TrackComponent),
+    title: 'Track Order — H2Os'
+  },
+  {
+    path: 'not-found',
+    loadComponent: () => import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+    title: 'Not Found — H2Os'
+  },
+  {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'not-found'
   }
 ];
