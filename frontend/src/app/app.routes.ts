@@ -40,6 +40,11 @@ export const routes: Routes = [
     title: 'Science — Hydrogen Water Health Benefits | H2Os'
   },
   {
+    path: 'specs',
+    loadComponent: () => import('./features/specs/specs.component').then(m => m.SpecsComponent),
+    title: 'Specifications — H2Os Ultra H₂ Collection | H2Os'
+  },
+  {
     path: 'videos',
     loadComponent: () => import('./features/videos/videos.component').then(m => m.VideosComponent),
     title: 'Videos — How to Use & Testimonials | H2Os Ultra H₂'

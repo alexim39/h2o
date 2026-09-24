@@ -24,7 +24,7 @@ import { CartService } from '../../../core/services/cart.service';
           <a routerLink="/videos" routerLinkActive="active">Videos</a>
           <a routerLink="/reviews" routerLinkActive="active">Reviews</a>
           <a routerLink="/" fragment="science">Science</a>
-          <a routerLink="/" fragment="specs">Specs</a>
+          <a routerLink="/specs" routerLinkActive="active">Specs</a>
         </nav>
 
         <div class="actions">
@@ -65,7 +65,7 @@ import { CartService } from '../../../core/services/cart.service';
       <a routerLink="/reviews" routerLinkActive="active" (click)="closeMenu()">Community Reviews</a>
       <a routerLink="/" fragment="science" (click)="closeMenu()">Science — Overview</a>
       <a routerLink="/science" routerLinkActive="active" (click)="closeMenu()">Science — Full Details</a>
-      <a routerLink="/" fragment="specs" (click)="closeMenu()">Specifications</a>
+      <a routerLink="/specs" routerLinkActive="active" (click)="closeMenu()">Specifications — Full Details</a>
       <a routerLink="/store/ultra-h2-v1" (click)="closeMenu()">Ultra H₂ — Detail</a>
       <div class="mobile-cta">
         <a routerLink="/store" class="btn-neon full" (click)="closeMenu()">Shop Store — From ₦40,000 →</a>
