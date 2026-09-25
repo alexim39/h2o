@@ -157,6 +157,22 @@ CREATE TABLE IF NOT EXISTS `admin_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------
+-- qr_codes — per-bottle authenticity (QR → /verify/:code)
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `qr_codes` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(32) NOT NULL,
+  `product_sku` VARCHAR(64) NULL,
+  `ppm_video_url` VARCHAR(255) NULL DEFAULT '/videos/hydrogen-h2o-test.mp4',
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `scans` INT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_qr_code` (`code`),
+  KEY `idx_qr_sku` (`product_sku`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------
 -- leads — protocol quiz + funnel captures for WhatsApp close
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `leads` (

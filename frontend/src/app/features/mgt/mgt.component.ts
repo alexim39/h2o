@@ -11,7 +11,7 @@ import { CartService } from '../../core/services/cart.service';
 import { DeepseekService } from '../../core/services/deepseek.service';
 import { environment } from '../../../environments/environment';
 
-type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads';
+type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads' | 'qr';
 
 @Component({
   selector: 'app-mgt',
@@ -265,6 +265,25 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 
             </div>
           }
 
+          @if (tab()==='qr') {
+            <div class="panel glass">
+              <h2>QR Authenticity — per-bottle codes</h2>
+              <form class="form grid2" (ngSubmit)="generateQr()">
+                <div class="group"><label>Count (1-500)</label><input type="number" [(ngModel)]="qrForm.count" name="qcount" min="1" max="500" /></div>
+                <div class="group"><label>Product SKU</label><input [(ngModel)]="qrForm.product_sku" name="qsku" placeholder="H2OS-ULTRA-H2" /></div>
+                <div class="group full"><label>PPM video URL</label><input [(ngModel)]="qrForm.ppm_video_url" name="qvid" placeholder="/videos/hydrogen-h2o-test.mp4" /></div>
+                <div class="form-actions full"><button type="submit" class="btn-neon sm">Generate batch</button><button type="button" class="btn-ghost sm" (click)="loadQr()">Refresh</button><button type="button" class="btn-ghost sm" (click)="copyQrCsv()">Copy CSV</button></div>
+              </form>
+              <p class="muted small">Print QR linking to https://hydrogenwaterbottles.store/verify/CODE per box.</p>
+              <div class="review-list">
+                @for (q of qrCodes(); track q.code) {
+                  <div class="review-row"><div><strong>{{ q.code }}</strong><p class="muted">{{ q.product_sku }} • {{ q.scans }} scans • {{ q.created_at }}</p></div>
+                  <a class="btn-ghost sm" [href]="'/verify/' + q.code" target="_blank">Open →</a></div>
+                }
+              </div>
+            </div>
+          }
+
           @if (tab()==='media') {
             <div class="panel glass">
               <h2>Media — Images & Videos</h2>
@@ -412,6 +431,7 @@ export class MgtComponent implements OnInit {
     {id:'reviews', label:'Reviews'},
     {id:'coupons', label:'Coupons'},
     {id:'leads', label:'Leads'},
+    {id:'qr', label:'QR'},
     {id:'media', label:'Media'},
     {id:'chats', label:'Chats'},
   ];
@@ -436,6 +456,7 @@ export class MgtComponent implements OnInit {
     this.loadLowStock();
     this.loadCoupons();
     this.loadLeads();
+    this.loadQr();
   }
 
   loadProducts(): void { this.product.loadCatalog(); }
@@ -504,6 +525,33 @@ export class MgtComponent implements OnInit {
       const d = (res as any)?.data ?? res;
       this.leads.set(Array.isArray(d) ? d : []);
     } catch {}
+  }
+
+  qrCodes = signal<any[]>([]);
+  qrForm: any = { count: 20, product_sku: 'H2OS-ULTRA-H2', ppm_video_url: '/videos/hydrogen-h2o-test.mp4' };
+  async loadQr(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/qr`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const d = (res as any)?.data ?? res;
+      this.qrCodes.set(Array.isArray(d) ? d : []);
+    } catch {}
+  }
+  async generateQr(): Promise<void> {
+    try {
+      await new Promise((resolve, reject) => {
+        this.http.post(`${environment.apiUrl}/qr/generate`, this.qrForm).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.toast.show('QR batch generated', 'success');
+      this.loadQr();
+    } catch (e: any) {
+      this.toast.show(e?.error?.message || 'Generate failed — admin login required', 'error');
+    }
+  }
+  copyQrCsv() {
+    const rows = ['code,verify_url,sku,video', ...this.qrCodes().map((q: any) => `${q.code},https://hydrogenwaterbottles.store/verify/${q.code},${q.product_sku},${q.ppm_video_url}`)];
+    try { navigator.clipboard.writeText(rows.join('\n')); this.toast.show('CSV copied — paste for printer', 'info'); } catch {}
   }
 
   async saveCoupon(): Promise<void> {
