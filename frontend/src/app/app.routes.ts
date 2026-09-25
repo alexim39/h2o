@@ -45,6 +45,11 @@ export const routes: Routes = [
     title: 'Specifications — H2Os Ultra H₂ Collection | H2Os'
   },
   {
+    path: 'protocol',
+    loadComponent: () => import('./features/protocol/protocol.component').then(m => m.ProtocolComponent),
+    title: '30-Day Cellular Detox Protocol | H2Os'
+  },
+  {
     path: 'videos',
     loadComponent: () => import('./features/videos/videos.component').then(m => m.VideosComponent),
     title: 'Videos — How to Use & Testimonials | H2Os Ultra H₂'

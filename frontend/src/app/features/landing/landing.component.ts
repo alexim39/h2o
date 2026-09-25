@@ -29,14 +29,14 @@ import { ToastService } from '../../core/services/toast.service';
             <h2 class="health-title">Stay Healthy <em>& Add Years</em> to Your Life</h2>
             <p class="health-sub">by drinking the purest hydrogen water — daily ritual, cellular renewal</p>
           </div>
-          <span class="eyebrow">H2Os • SPE • PEM • 1600 PPB • Platinum Titanium</span>
+          <span class="eyebrow">30-Day Cellular Detox Protocol • Energy • Sleep • Recovery</span>
           <h1>
             <span class="kicker">H2Os presents</span>
-            <span class="title">Ultra <em>H₂</em></span>
-            <span class="sub">Hydration, upgraded. Health, elevated.</span>
+            <span class="title">Energy. Sleep. <em>Recovery.</em></span>
+            <span class="sub">30-day transformation — powered by Ultra H₂. Hydration, upgraded.</span>
           </h1>
           <p class="lead">
-            Advanced hydrogen infusion technology. <strong>1200–1600 ppb</strong> ultra-pure H₂ in 3 minutes. The ritual that turns water into cellular fuel.
+            For Executives, Athletes & High Performers. <strong>1200–1600 ppb</strong> ultra-pure H₂ in 3 minutes — morning clarity, afternoon recovery, evening calm.
           </p>
 
           <div class="price-row">
@@ -46,9 +46,9 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
 
           <div class="cta-row">
-            <a routerLink="/store/ultra-h2-v1" class="btn-neon">Shop Ultra H₂ — {{ cart.formatNGN(selected().price) }} <span>→</span></a>
-            <a routerLink="/videos" class="btn-ghost video-btn">
-              <span class="play">▶</span> Watch how to use
+            <a routerLink="/protocol" class="btn-neon">Start My 30-Day Protocol <span>→</span></a>
+            <a routerLink="/store/ultra-h2-v1" class="btn-ghost video-btn">
+              Shop Ultra H₂ — {{ cart.formatNGN(selected().price) }}
             </a>
           </div>
           <div class="other-products">

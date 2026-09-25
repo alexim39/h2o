@@ -157,6 +157,22 @@ CREATE TABLE IF NOT EXISTS `admin_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------
+-- leads — protocol quiz + funnel captures for WhatsApp close
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `leads` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(64) NULL,
+  `phone` VARCHAR(32) NULL,
+  `goal` VARCHAR(64) NULL COMMENT 'energy|sleep|recovery|aging|gut|focus',
+  `activity` VARCHAR(64) NULL,
+  `recommended_sku` VARCHAR(64) NULL,
+  `source` VARCHAR(64) NOT NULL DEFAULT 'protocol',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_leads_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------
 -- coupons — % off, optional min_total + expiry
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `coupons` (

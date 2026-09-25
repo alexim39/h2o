@@ -11,7 +11,7 @@ import { CartService } from '../../core/services/cart.service';
 import { DeepseekService } from '../../core/services/deepseek.service';
 import { environment } from '../../../environments/environment';
 
-type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons';
+type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads';
 
 @Component({
   selector: 'app-mgt',
@@ -248,6 +248,23 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 
             </div>
           }
 
+          @if (tab()==='leads') {
+            <div class="panel glass">
+              <h2>Leads — Protocol funnel ({{ leads().length }})</h2>
+              <div class="toolbar-actions"><button class="btn-ghost sm" (click)="loadLeads()">Refresh</button></div>
+              <div class="review-list">
+                @for (l of leads(); track $index) {
+                  <div class="review-row"><div>
+                    <strong>{{ l.name || '—' }} • {{ l.phone || '' }}</strong>
+                    <p class="muted">{{ l.goal || '' }} • {{ l.activity || '' }} → {{ l.recommended_sku || '' }}</p>
+                    <span class="muted small">{{ l.created_at }} • {{ l.source }}</span>
+                  </div>
+                  <a class="btn-ghost sm" [href]="'https://wa.me/' + (l.phone || '2348080386208')" target="_blank">WhatsApp →</a></div>
+                }
+              </div>
+            </div>
+          }
+
           @if (tab()==='media') {
             <div class="panel glass">
               <h2>Media — Images & Videos</h2>
@@ -394,6 +411,7 @@ export class MgtComponent implements OnInit {
     {id:'orders', label:'Orders'},
     {id:'reviews', label:'Reviews'},
     {id:'coupons', label:'Coupons'},
+    {id:'leads', label:'Leads'},
     {id:'media', label:'Media'},
     {id:'chats', label:'Chats'},
   ];
@@ -417,6 +435,7 @@ export class MgtComponent implements OnInit {
     this.loadAnalytics();
     this.loadLowStock();
     this.loadCoupons();
+    this.loadLeads();
   }
 
   loadProducts(): void { this.product.loadCatalog(); }
@@ -473,6 +492,17 @@ export class MgtComponent implements OnInit {
       });
       const d = (res as any)?.data ?? res;
       this.coupons.set(Array.isArray(d) ? d : []);
+    } catch {}
+  }
+
+  leads = signal<any[]>([]);
+  async loadLeads(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/leads`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const d = (res as any)?.data ?? res;
+      this.leads.set(Array.isArray(d) ? d : []);
     } catch {}
   }
 

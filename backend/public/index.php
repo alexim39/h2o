@@ -53,6 +53,7 @@ use App\Controllers\ReviewController;
 use App\Controllers\ChatController;
 use App\Controllers\AdminController;
 use App\Controllers\CouponController;
+use App\Controllers\LeadController;
 
 // 3) CORS — allow hydrogenwaterbottles.store + localhost, always send headers on OPTIONS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -171,6 +172,9 @@ $router->get('/admin/analytics', [AdminController::class, 'analytics']);
 $router->post('/coupons/validate', [CouponController::class, 'validate']);
 $router->get('/coupons', [CouponController::class, 'index']);
 $router->post('/coupons', [CouponController::class, 'store']);
+
+$router->post('/leads', [LeadController::class, 'store']);
+$router->get('/leads', [LeadController::class, 'index']);
 
 // Test email — premium luxury template preview (admin only, requires ?to=email or ?secret)
 $router->get('/test-email', function (Request $r) {
