@@ -157,6 +157,23 @@ CREATE TABLE IF NOT EXISTS `admin_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------
+-- corporate_leads — B2B pipeline (20× deals)
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `corporate_leads` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `company` VARCHAR(128) NOT NULL,
+  `contact` VARCHAR(64) NULL,
+  `email` VARCHAR(255) NULL,
+  `phone` VARCHAR(32) NULL,
+  `qty` INT UNSIGNED NOT NULL DEFAULT 20,
+  `message` TEXT NULL,
+  `status` ENUM('new','pitched','won','lost') NOT NULL DEFAULT 'new',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_corp_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------
 -- subscriptions — filters/tablets MRR (Paystack recurring MVP: manual monthly link)
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `subscriptions` (

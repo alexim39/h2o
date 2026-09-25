@@ -65,6 +65,11 @@ export const routes: Routes = [
     title: 'H2Os Club | H2Os'
   },
   {
+    path: 'corporate',
+    loadComponent: () => import('./features/corporate/corporate.component').then(m => m.CorporateComponent),
+    title: 'Corporate Wellness | H2Os'
+  },
+  {
     path: 'videos',
     loadComponent: () => import('./features/videos/videos.component').then(m => m.VideosComponent),
     title: 'Videos — How to Use & Testimonials | H2Os Ultra H₂'

@@ -11,7 +11,7 @@ import { CartService } from '../../core/services/cart.service';
 import { DeepseekService } from '../../core/services/deepseek.service';
 import { environment } from '../../../environments/environment';
 
-type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads' | 'qr' | 'subs';
+type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads' | 'qr' | 'subs' | 'corp';
 
 @Component({
   selector: 'app-mgt',
@@ -305,6 +305,28 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 
             </div>
           }
 
+          @if (tab()==='corp') {
+            <div class="panel glass">
+              <h2>Corporate pipeline ({{ corpLeads().length }})</h2>
+              <div class="toolbar-actions"><button class="btn-ghost sm" (click)="loadCorp()">Refresh</button></div>
+              <div class="review-list">
+                @for (c of corpLeads(); track c.id) {
+                  <div class="review-row"><div>
+                    <strong>{{ c.company }} — {{ c.qty }}× ({{ cart.formatNGN(c.qty * 350000) }})</strong>
+                    <p class="muted">{{ c.contact }} • {{ c.email }} • {{ c.phone }}</p>
+                    <span class="muted small">{{ c.status }} • {{ c.created_at }}</span>
+                  </div>
+                  <div class="row-actions">
+                    @for (st of ['pitched','won','lost']; track st) {
+                      <button class="btn-ghost sm" [disabled]="c.status===st" (click)="setCorpStatus(c.id, st)">{{ st }}</button>
+                    }
+                    <a class="btn-ghost sm" [href]="'https://wa.me/' + (c.phone || '2348080386208')" target="_blank">WhatsApp →</a>
+                  </div></div>
+                }
+              </div>
+            </div>
+          }
+
           @if (tab()==='media') {
             <div class="panel glass">
               <h2>Media — Images & Videos</h2>
@@ -454,6 +476,7 @@ export class MgtComponent implements OnInit {
     {id:'leads', label:'Leads'},
     {id:'qr', label:'QR'},
     {id:'subs', label:'Subs'},
+    {id:'corp', label:'Corp'},
     {id:'media', label:'Media'},
     {id:'chats', label:'Chats'},
   ];
@@ -480,6 +503,7 @@ export class MgtComponent implements OnInit {
     this.loadLeads();
     this.loadQr();
     this.loadSubs();
+    this.loadCorp();
   }
 
   loadProducts(): void { this.product.loadCatalog(); }
@@ -567,6 +591,26 @@ export class MgtComponent implements OnInit {
       });
       this.toast.show(`Sub ${id} → ${status}`, 'success');
       this.loadSubs();
+    } catch (e: any) { this.toast.show(e?.error?.message || 'Update failed', 'error'); }
+  }
+
+  corpLeads = signal<any[]>([]);
+  async loadCorp(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/corporate-leads`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const d = (res as any)?.data ?? res;
+      this.corpLeads.set(Array.isArray(d) ? d : []);
+    } catch {}
+  }
+  async setCorpStatus(id: number, status: string): Promise<void> {
+    try {
+      await new Promise((resolve, reject) => {
+        this.http.put(`${environment.apiUrl}/corporate-leads/${id}`, { status }).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.toast.show(`Deal ${id} → ${status}`, 'success');
+      this.loadCorp();
     } catch (e: any) { this.toast.show(e?.error?.message || 'Update failed', 'error'); }
   }
 
