@@ -11,7 +11,7 @@ import { CartService } from '../../core/services/cart.service';
 import { DeepseekService } from '../../core/services/deepseek.service';
 import { environment } from '../../../environments/environment';
 
-type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads' | 'qr' | 'subs' | 'corp';
+type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads' | 'qr' | 'subs' | 'corp' | 'refs';
 
 @Component({
   selector: 'app-mgt',
@@ -327,6 +327,26 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 
             </div>
           }
 
+          @if (tab()==='refs') {
+            <div class="panel glass">
+              <h2>Referrals — ₦10k payouts ({{ refs().length }})</h2>
+              <div class="toolbar-actions"><button class="btn-ghost sm" (click)="loadRefs()">Refresh</button></div>
+              <div class="review-list">
+                @for (r of refs(); track r.id) {
+                  <div class="review-row"><div>
+                    <strong>{{ r.code }} → {{ r.referrer_email }}</strong>
+                    <p class="muted">{{ r.referred_email || '—' }} • {{ r.referred_reference || 'no order yet' }} • ₦{{ r.reward }}</p>
+                    <span class="muted small">{{ r.status }} • {{ r.created_at }}</span>
+                  </div>
+                  <div class="row-actions">
+                    <button class="btn-ghost sm" [disabled]="r.status==='approved'" (click)="setRefStatus(r.id, 'approved')">Approve</button>
+                    <button class="btn-ghost sm" [disabled]="r.status==='paid'" (click)="setRefStatus(r.id, 'paid')">Paid</button>
+                  </div></div>
+                }
+              </div>
+            </div>
+          }
+
           @if (tab()==='media') {
             <div class="panel glass">
               <h2>Media — Images & Videos</h2>
@@ -477,6 +497,7 @@ export class MgtComponent implements OnInit {
     {id:'qr', label:'QR'},
     {id:'subs', label:'Subs'},
     {id:'corp', label:'Corp'},
+    {id:'refs', label:'Refs'},
     {id:'media', label:'Media'},
     {id:'chats', label:'Chats'},
   ];
@@ -504,6 +525,7 @@ export class MgtComponent implements OnInit {
     this.loadQr();
     this.loadSubs();
     this.loadCorp();
+    this.loadRefs();
   }
 
   loadProducts(): void { this.product.loadCatalog(); }
@@ -591,6 +613,26 @@ export class MgtComponent implements OnInit {
       });
       this.toast.show(`Sub ${id} → ${status}`, 'success');
       this.loadSubs();
+    } catch (e: any) { this.toast.show(e?.error?.message || 'Update failed', 'error'); }
+  }
+
+  refs = signal<any[]>([]);
+  async loadRefs(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/referrals`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const d = (res as any)?.data ?? res;
+      this.refs.set(Array.isArray(d) ? d : []);
+    } catch {}
+  }
+  async setRefStatus(id: number, status: string): Promise<void> {
+    try {
+      await new Promise((resolve, reject) => {
+        this.http.put(`${environment.apiUrl}/referrals/${id}`, { status }).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.toast.show(`Referral ${id} → ${status}`, 'success');
+      this.loadRefs();
     } catch (e: any) { this.toast.show(e?.error?.message || 'Update failed', 'error'); }
   }
 

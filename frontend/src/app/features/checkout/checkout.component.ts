@@ -66,6 +66,15 @@ import { ShippingDetails } from '../../core/models/cart.model';
 
             <label class="check sub-toggle"><input type="checkbox" [checked]="subscribeMonthly()" (change)="subscribeMonthly.set(!subscribeMonthly())" /> Subscribe & Save — monthly filters/refills, pause anytime</label>
 
+            <div class="group coupon-row">
+              <label>Referral code (friend earns ₦10k)</label>
+              <div class="coupon-input">
+                <input [(ngModel)]="referral" name="referral" placeholder="8-CHAR CODE" style="text-transform:uppercase" />
+                <button type="button" class="btn-ghost sm" (click)="applyReferral()">Check</button>
+              </div>
+              @if (referralMsg()) { <p class="muted small">{{ referralMsg() }}</p> }
+            </div>
+
             @if (error()) { <div class="error">{{ error() }}</div> }
 
             <button type="submit" class="btn-neon full" [disabled]="loading() || cart.isEmpty()">
@@ -174,6 +183,15 @@ export class CheckoutComponent {
   couponError = signal<string | null>(null);
   couponDiscount = signal(0);
   subscribeMonthly = signal(false);
+  referral = '';
+  referralMsg = signal<string | null>(null);
+
+  constructor() {
+    try {
+      const saved = localStorage.getItem('h2os_referral');
+      if (saved) this.referral = saved;
+    } catch {}
+  }
 
   nigeriaStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT - Abuja'];
 
@@ -211,6 +229,23 @@ export class CheckoutComponent {
     } finally { this.couponLoading.set(false); }
   }
 
+  async applyReferral() {
+    this.referralMsg.set(null);
+    const code = this.referral.trim().toUpperCase();
+    if (!code) return;
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.api.resolveReferral(code).subscribe({ next: (v: any) => resolve(v), error: (e: any) => reject(e) });
+      });
+      if ((res as any)?.data || (res as any)?.status) {
+        this.referralMsg.set(`${code} accepted — friend earns ₦10,000 on your paid order.`);
+        try { localStorage.setItem('h2os_referral', code); } catch {}
+      }
+    } catch {
+      this.referralMsg.set('Invalid referral code — continuing without it.');
+    }
+  }
+
   async pay() {
     this.error.set(null);
 
@@ -227,12 +262,13 @@ export class CheckoutComponent {
       const email = s.email.trim();
       const reference = `HYDRO_${Date.now()}_${Math.random().toString(36).slice(2,6).toUpperCase()}`;
       const couponCode = this.coupon.trim().toUpperCase() || undefined;
+      const referralCode = this.referral.trim().toUpperCase() || undefined;
 
-      // 1) Create order (blocking — must succeed, carries coupon)
+      // 1) Create order (blocking — must succeed, carries coupon + referral)
       await new Promise<void>((resolve, reject) => {
         let settled = false;
         const done = (fn: () => void) => { if (!settled) { settled = true; fn(); } };
-        this.api.createOrder({ items: this.cart.items(), shipping: s, reference, total: this.cart.total(), coupon: couponCode }).subscribe({
+        this.api.createOrder({ items: this.cart.items(), shipping: s, reference, total: this.cart.total(), coupon: couponCode, referral: referralCode }).subscribe({
           next: () => done(() => resolve()),
           error: (e: any) => done(() => reject(e))
         });

@@ -57,6 +57,7 @@ use App\Controllers\LeadController;
 use App\Controllers\QrController;
 use App\Controllers\SubscriptionController;
 use App\Controllers\CorporateController;
+use App\Controllers\ReferralController;
 
 // 3) CORS — allow hydrogenwaterbottles.store + localhost, always send headers on OPTIONS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -191,6 +192,12 @@ $router->put('/subscriptions/{id}', [SubscriptionController::class, 'update']);
 $router->post('/corporate-leads', [CorporateController::class, 'store']);
 $router->get('/corporate-leads', [CorporateController::class, 'index']);
 $router->put('/corporate-leads/{id}', [CorporateController::class, 'update']);
+
+$router->post('/referrals/create', [ReferralController::class, 'create']);
+$router->get('/referrals/code/{code}', [ReferralController::class, 'resolve']);
+$router->post('/referrals/attach', [ReferralController::class, 'attach']);
+$router->get('/referrals', [ReferralController::class, 'index']);
+$router->put('/referrals/{id}', [ReferralController::class, 'update']);
 
 // Test email — premium luxury template preview (admin only, requires ?to=email or ?secret)
 $router->get('/test-email', function (Request $r) {

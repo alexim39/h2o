@@ -47,6 +47,16 @@ import { ApiService } from '../../core/services/api.service';
             <a routerLink="/club" class="btn-ghost">Join H2Os Club →</a>
           </div>
 
+          <div class="referral glass">
+            <h4>Earn ₦10,000 per friend</h4>
+            <p class="muted small">Share your link — friend buys paid, you get credited.</p>
+            @if (referralLink()) {
+              <div class="ref-box"><strong>{{ referralLink() }}</strong><button class="copy" (click)="copyReferral()">Copy</button></div>
+            } @else {
+              <button class="btn-ghost sm" (click)="makeReferral()">Get my link →</button>
+            }
+          </div>
+
           <p class="support">Questions? concierge&#64;hydrogenwaterbottles.store • WhatsApp: +2348080386208 • H2Os</p>
         </div>
 
@@ -83,6 +93,8 @@ import { ApiService } from '../../core/services/api.service';
     .next-steps li{ font-size:13px; color:var(--text-secondary); line-height:1.6; }
     .next-steps li strong{ color:var(--text-primary); }
     .actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:18px; }
+    .referral{ margin-top:16px; border-radius:18px; padding:16px; text-align:center; }
+    .referral h4{ font-size:13px; }
     .support{ margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); }
     .guarantee{ margin-top:16px; border-radius:18px; padding:16px; text-align:center; background: linear-gradient(135deg, rgba(0,255,136,0.06), transparent); }
     .guarantee h4{ font-size:13px; }
@@ -97,6 +109,7 @@ export class ConfirmationComponent implements OnInit {
 
   ref = signal<string>('');
   order = signal<any | null>(null);
+  referralLink = signal<string | null>(null);
 
   shortRef = () => this.ref().slice(-8).toUpperCase() || 'H2Os';
 
@@ -105,7 +118,19 @@ export class ConfirmationComponent implements OnInit {
     this.ref.set(r);
     this.api.getOrder(r).subscribe({
       next: (res) => {
-        if (res?.data) this.order.set(res.data);
+        if (res?.data) {
+          this.order.set(res.data);
+          const email = res.data.email || res.data.shipping?.email;
+          if (email) {
+            this.api.createReferral(email).subscribe({
+              next: (rr: any) => {
+                const d = rr?.data ?? rr;
+                if (d?.link) this.referralLink.set(d.link);
+                else if (d?.code) this.referralLink.set(`https://hydrogenwaterbottles.store/r/${d.code}`);
+              }
+            });
+          }
+        }
       }
     });
   }
@@ -117,5 +142,21 @@ export class ConfirmationComponent implements OnInit {
 
   copy() {
     navigator.clipboard.writeText(this.ref());
+  }
+
+  copyReferral() {
+    if (this.referralLink()) navigator.clipboard.writeText(this.referralLink()!);
+  }
+
+  makeReferral() {
+    const email = this.order()?.email || this.order()?.shipping?.email;
+    if (!email) return;
+    this.api.createReferral(email).subscribe({
+      next: (res: any) => {
+        const d = res?.data ?? res;
+        if (d?.link) this.referralLink.set(d.link);
+        else if (d?.code) this.referralLink.set(`https://hydrogenwaterbottles.store/r/${d.code}`);
+      }
+    });
   }
 }

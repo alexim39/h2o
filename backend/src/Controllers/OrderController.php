@@ -22,6 +22,7 @@ final class OrderController
         $shipping = $body['shipping'] ?? null;
         $reference = isset($body['reference']) ? $this->sanitize((string)$body['reference']) : null;
         $couponCode = isset($body['coupon']) ? trim((string)$body['coupon']) : null;
+        $referralCode = isset($body['referral']) ? strtoupper(trim((string)$body['referral'])) : null;
 
         $errors = [];
         if (!is_array($items) || empty($items)) $errors['items'] = 'Cart items required.';
@@ -59,6 +60,9 @@ final class OrderController
         $ref = $reference ?: ('H2OS_' . time() . '_' . strtoupper(substr(bin2hex(random_bytes(3)),0,5)));
         $tracking = 'HY-' . strtoupper(substr(md5($ref), 0, 8));
 
+        // Referral validated after order insert (needs order row for UPDATE)
+        $pendingReferral = $referralCode ?: null;
+
         $orderId = null;
         try {
             Database::begin();
@@ -80,6 +84,20 @@ final class OrderController
             error_log('[OrderController::store] DB error: ' . $e->getMessage());
             Response::error('Order failed — please try again.', 500);
             return;
+        }
+
+        // Attach referral after insert (best-effort, never blocks order)
+        if ($pendingReferral) {
+            try {
+                $r = Database::fetchOne('SELECT code, referrer_email FROM referrals WHERE code = :c LIMIT 1', ['c' => $pendingReferral]);
+                if ($r && strtolower($r['referrer_email']) !== $cleanShipping['email']) {
+                    Database::execute(
+                        'INSERT INTO referrals (code, referrer_email, referred_email, referred_reference) VALUES (:c,:r,:e,:ref)',
+                        ['c' => $pendingReferral . '-' . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4)), 'r' => $r['referrer_email'], 'e' => $cleanShipping['email'], 'ref' => $ref]
+                    );
+                }
+                try { Database::execute('UPDATE orders SET referral_code = :c WHERE reference = :ref', ['c' => $pendingReferral, 'ref' => $ref]); } catch (\Throwable) {}
+            } catch (\Throwable $e) { error_log('[Referral] order attach: ' . $e->getMessage()); }
         }
 
         $orderPayload = [

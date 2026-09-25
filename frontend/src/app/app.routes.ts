@@ -70,6 +70,16 @@ export const routes: Routes = [
     title: 'Corporate Wellness | H2Os'
   },
   {
+    path: 'r/:code',
+    loadComponent: () => import('./features/referral/referral.component').then(m => m.ReferralComponent),
+    title: 'Friend Invite | H2Os'
+  },
+  {
+    path: 'wa',
+    loadComponent: () => import('./features/wa/wa.component').then(m => m.WaComponent),
+    title: 'H2Os on WhatsApp | H2Os'
+  },
+  {
     path: 'videos',
     loadComponent: () => import('./features/videos/videos.component').then(m => m.VideosComponent),
     title: 'Videos — How to Use & Testimonials | H2Os Ultra H₂'

@@ -157,6 +157,27 @@ CREATE TABLE IF NOT EXISTS `admin_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------
+-- referrals — buyer referral rewards (₦10k on friend paid)
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `referrals` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(16) NOT NULL,
+  `referrer_email` VARCHAR(255) NOT NULL,
+  `referred_email` VARCHAR(255) NULL,
+  `referred_reference` VARCHAR(64) NULL,
+  `reward` INT UNSIGNED NOT NULL DEFAULT 10000,
+  `status` ENUM('pending','approved','paid') NOT NULL DEFAULT 'pending',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_referral_code` (`code`),
+  KEY `idx_ref_referrer` (`referrer_email`),
+  KEY `idx_ref_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- orders referral column (safe if already exists)
+-- ALTER TABLE orders ADD COLUMN referral_code VARCHAR(16) NULL AFTER paystack_ref;
+
+-- --------------------------------------------------
 -- corporate_leads — B2B pipeline (20× deals)
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `corporate_leads` (

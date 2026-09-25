@@ -164,6 +164,7 @@ final class PaymentController
             $mailer->sendAdminPaidAlert($payload);
             // Decrement stock once on paid + low-stock log
             \App\Services\PricingService::decrementStock($payload['items']);
+            \App\Controllers\ReferralController::approveForReference($ref);
         } catch (\Throwable $e) {
             error_log('[Paid email] ' . $e->getMessage());
         }

@@ -38,4 +38,12 @@ export class ApiService {
   createSubscription(email: string, items: any[]): Observable<any> {
     return this.http.post(`${environment.apiUrl}/subscriptions`, { email, items });
   }
+
+  resolveReferral(code: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/referrals/code/${encodeURIComponent(code)}`);
+  }
+
+  createReferral(email: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/referrals/create`, { email });
+  }
 }
