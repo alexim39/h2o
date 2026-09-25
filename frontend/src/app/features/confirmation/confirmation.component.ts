@@ -44,6 +44,7 @@ import { ApiService } from '../../core/services/api.service';
           <div class="actions">
             <a routerLink="/" class="btn-neon">Return to Atelier</a>
             <a [href]="waLink()" target="_blank" rel="noopener" class="btn-ghost">Chat Concierge on WhatsApp</a>
+            <a routerLink="/club" class="btn-ghost">Join H2Os Club →</a>
           </div>
 
           <p class="support">Questions? concierge&#64;hydrogenwaterbottles.store • WhatsApp: +2348080386208 • H2Os</p>

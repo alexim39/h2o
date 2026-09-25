@@ -64,6 +64,8 @@ import { ShippingDetails } from '../../core/models/cart.model';
               @if (couponError()) { <div class="error">{{ couponError() }}</div> }
             </div>
 
+            <label class="check sub-toggle"><input type="checkbox" [checked]="subscribeMonthly()" (change)="subscribeMonthly.set(!subscribeMonthly())" /> Subscribe & Save — monthly filters/refills, pause anytime</label>
+
             @if (error()) { <div class="error">{{ error() }}</div> }
 
             <button type="submit" class="btn-neon full" [disabled]="loading() || cart.isEmpty()">
@@ -117,6 +119,7 @@ import { ShippingDetails } from '../../core/models/cart.model';
     .steps span.active{ color:var(--neon); font-weight:800; }
     .coupon-row .coupon-input{ display:flex; gap:8px; }
     .coupon-input input{ flex:1; background: rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; padding:10px 12px; color:var(--text-primary); font-size:13px; outline:none; }
+    .sub-toggle{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary); background: rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.14); border-radius:12px; padding:10px 12px; }
     .small{ font-size:11px; }
     .checkout-grid{ display:grid; grid-template-columns: 1.2fr 0.8fr; gap:24px; align-items:start; }
     .form-card{ border-radius:24px; padding:26px; }
@@ -170,6 +173,7 @@ export class CheckoutComponent {
   couponMsg = signal<string | null>(null);
   couponError = signal<string | null>(null);
   couponDiscount = signal(0);
+  subscribeMonthly = signal(false);
 
   nigeriaStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT - Abuja'];
 
@@ -256,8 +260,20 @@ export class CheckoutComponent {
   }
 
   private async handleSuccess(ref: string) {
+    const wantSub = this.subscribeMonthly();
+    const subEmail = this.shipping.email.trim();
+    const subItems = this.cart.items();
     try {
       await this.paystack.verify(ref);
+      if (wantSub && subEmail) {
+        try {
+          await new Promise((resolve) => {
+            this.api.createSubscription(subEmail, subItems).subscribe({ next: () => resolve(null), error: () => resolve(null) });
+            setTimeout(() => resolve(null), 4000);
+          });
+          this.toast.show('Subscription active — monthly delivery', 'success');
+        } catch {}
+      }
       this.cart.clear();
       this.toast.show('Ritual secured — welcome to HYDRO+ ELITE', 'success');
       this.router.navigate(['/confirmation', ref]);

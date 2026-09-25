@@ -60,6 +60,11 @@ export const routes: Routes = [
     title: 'Verify Authenticity | H2Os'
   },
   {
+    path: 'club',
+    loadComponent: () => import('./features/club/club.component').then(m => m.ClubComponent),
+    title: 'H2Os Club | H2Os'
+  },
+  {
     path: 'videos',
     loadComponent: () => import('./features/videos/videos.component').then(m => m.VideosComponent),
     title: 'Videos — How to Use & Testimonials | H2Os Ultra H₂'

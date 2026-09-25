@@ -34,4 +34,8 @@ export class ApiService {
   getAnalytics(): Observable<any> {
     return this.http.get(`${environment.apiUrl}/admin/analytics`);
   }
+
+  createSubscription(email: string, items: any[]): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/subscriptions`, { email, items });
+  }
 }

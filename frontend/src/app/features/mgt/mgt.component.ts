@@ -11,7 +11,7 @@ import { CartService } from '../../core/services/cart.service';
 import { DeepseekService } from '../../core/services/deepseek.service';
 import { environment } from '../../../environments/environment';
 
-type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads' | 'qr';
+type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 'coupons' | 'leads' | 'qr' | 'subs';
 
 @Component({
   selector: 'app-mgt',
@@ -284,6 +284,27 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 
             </div>
           }
 
+          @if (tab()==='subs') {
+            <div class="panel glass">
+              <h2>Subscriptions — MRR ({{ subs().length }})</h2>
+              <div class="toolbar-actions"><button class="btn-ghost sm" (click)="loadSubs()">Refresh</button></div>
+              <div class="review-list">
+                @for (s of subs(); track s.id) {
+                  <div class="review-row"><div>
+                    <strong>{{ s.email }} • {{ s.variant_key }} ×{{ s.qty }}</strong>
+                    <p class="muted">{{ s.status }} • next {{ s.next_charge_at }}</p>
+                  </div>
+                  <div class="row-actions">
+                    @for (st of ['active','paused','cancelled']; track st) {
+                      <button class="btn-ghost sm" [disabled]="s.status===st" (click)="setSubStatus(s.id, st)">{{ st }}</button>
+                    }
+                  </div></div>
+                }
+              </div>
+              <p class="hint">MVP: monthly link sent manually. Paystack plan auto-charge next.</p>
+            </div>
+          }
+
           @if (tab()==='media') {
             <div class="panel glass">
               <h2>Media — Images & Videos</h2>
@@ -432,6 +453,7 @@ export class MgtComponent implements OnInit {
     {id:'coupons', label:'Coupons'},
     {id:'leads', label:'Leads'},
     {id:'qr', label:'QR'},
+    {id:'subs', label:'Subs'},
     {id:'media', label:'Media'},
     {id:'chats', label:'Chats'},
   ];
@@ -457,6 +479,7 @@ export class MgtComponent implements OnInit {
     this.loadCoupons();
     this.loadLeads();
     this.loadQr();
+    this.loadSubs();
   }
 
   loadProducts(): void { this.product.loadCatalog(); }
@@ -525,6 +548,26 @@ export class MgtComponent implements OnInit {
       const d = (res as any)?.data ?? res;
       this.leads.set(Array.isArray(d) ? d : []);
     } catch {}
+  }
+
+  subs = signal<any[]>([]);
+  async loadSubs(): Promise<void> {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        this.http.get(`${environment.apiUrl}/subscriptions`).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      const d = (res as any)?.data ?? res;
+      this.subs.set(Array.isArray(d) ? d : []);
+    } catch {}
+  }
+  async setSubStatus(id: number, status: string): Promise<void> {
+    try {
+      await new Promise((resolve, reject) => {
+        this.http.put(`${environment.apiUrl}/subscriptions/${id}`, { status }).subscribe({ next: v => resolve(v), error: e => reject(e) });
+      });
+      this.toast.show(`Sub ${id} → ${status}`, 'success');
+      this.loadSubs();
+    } catch (e: any) { this.toast.show(e?.error?.message || 'Update failed', 'error'); }
   }
 
   qrCodes = signal<any[]>([]);

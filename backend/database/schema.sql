@@ -157,6 +157,23 @@ CREATE TABLE IF NOT EXISTS `admin_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------
+-- subscriptions — filters/tablets MRR (Paystack recurring MVP: manual monthly link)
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `subscriptions` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(255) NOT NULL,
+  `variant_key` VARCHAR(32) NOT NULL,
+  `qty` INT UNSIGNED NOT NULL DEFAULT 1,
+  `status` ENUM('active','paused','cancelled') NOT NULL DEFAULT 'active',
+  `next_charge_at` DATE NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sub_email` (`email`),
+  KEY `idx_sub_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------
 -- qr_codes — per-bottle authenticity (QR → /verify/:code)
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `qr_codes` (

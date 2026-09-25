@@ -26,6 +26,7 @@ import { CartService } from '../../../core/services/cart.service';
           <a routerLink="/" fragment="science">Science</a>
           <a routerLink="/specs" routerLinkActive="active">Specs</a>
           <a routerLink="/protocol" routerLinkActive="active">Protocol</a>
+          <a routerLink="/club" routerLinkActive="active">Club</a>
         </nav>
 
         <div class="actions">
@@ -68,6 +69,7 @@ import { CartService } from '../../../core/services/cart.service';
       <a routerLink="/science" routerLinkActive="active" (click)="closeMenu()">Science — Full Details</a>
       <a routerLink="/specs" routerLinkActive="active" (click)="closeMenu()">Specifications — Full Details</a>
       <a routerLink="/protocol" routerLinkActive="active" (click)="closeMenu()">30-Day Protocol</a>
+      <a routerLink="/club" routerLinkActive="active" (click)="closeMenu()">H2Os Club</a>
       <a routerLink="/store/ultra-h2-v1" (click)="closeMenu()">Ultra H₂ — Detail</a>
       <div class="mobile-cta">
         <a routerLink="/store" class="btn-neon full" (click)="closeMenu()">Shop Store — From ₦40,000 →</a>

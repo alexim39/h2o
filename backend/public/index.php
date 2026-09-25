@@ -55,6 +55,7 @@ use App\Controllers\AdminController;
 use App\Controllers\CouponController;
 use App\Controllers\LeadController;
 use App\Controllers\QrController;
+use App\Controllers\SubscriptionController;
 
 // 3) CORS — allow hydrogenwaterbottles.store + localhost, always send headers on OPTIONS
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -181,6 +182,10 @@ $router->post('/qr/generate', [QrController::class, 'generate']);
 $router->get('/qr', [QrController::class, 'index']);
 $router->get('/qr/{code}', [QrController::class, 'verify']);
 $router->get('/verify/{code}', [QrController::class, 'verify']);
+
+$router->post('/subscriptions', [SubscriptionController::class, 'store']);
+$router->get('/subscriptions', [SubscriptionController::class, 'index']);
+$router->put('/subscriptions/{id}', [SubscriptionController::class, 'update']);
 
 // Test email — premium luxury template preview (admin only, requires ?to=email or ?secret)
 $router->get('/test-email', function (Request $r) {
