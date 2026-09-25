@@ -119,7 +119,8 @@ import { ToastService } from '../../core/services/toast.service';
     .quiz-card h2{ font-family:'Space Grotesk',sans-serif; font-size:22px; }
     .group{ display:flex; flex-direction:column; gap:6px; flex:1; }
     .group label{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); font-weight:700; }
-    .group input, .group select{ background: rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; padding:10px 12px; color:var(--text-primary); font-size:13px; outline:none; }
+    .group input, .group select{ background: rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; padding:10px 12px; color:var(--text-primary); font-size:13px; outline:none; color-scheme: dark; }
+    .group select option{ color:#050507; background:#FFFFFF; }
     .row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     .full{ width:100%; justify-content:center; }
     .reco{ background: rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.16); border-radius:14px; padding:12px; }

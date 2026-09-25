@@ -139,7 +139,8 @@ type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest';
     .search input{ background:transparent; border:none; outline:none; color:var(--text-primary); flex:1; font-size:13px; }
     .search .clear{ background:rgba(255,255,255,0.08); border:none; width:22px;height:22px;border-radius:50%; color:var(--text-secondary); }
     .filters{ display:flex; gap:8px; flex-wrap:wrap; }
-    .filters select{ background: rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text-primary); border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; outline:none; }
+    .filters select{ background: rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text-primary); border-radius:999px; padding:8px 12px; font-size:12px; font-weight:600; outline:none; color-scheme: dark; }
+    .filters select option{ color:#050507; background:#FFFFFF; }
     .chips{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
     .chip{ padding:6px 12px; border-radius:999px; background: rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text-secondary); font-size:12px; font-weight:600; }
     .chip.active{ background: var(--neon); color:#050507; border-color:var(--neon); box-shadow:0 0 12px rgba(0,255,136,0.3); }
