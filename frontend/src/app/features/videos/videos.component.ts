@@ -85,7 +85,7 @@ interface VideoItem {
             <h3>Ready for Ultra H₂?</h3>
             <p>See it. Then feel it. 30-day guarantee — hydration, upgraded.</p>
           </div>
-          <a routerLink="/store" class="btn-neon">Shop Ultra H₂ — ₦1,300,000 →</a>
+          <a routerLink="/store" class="btn-neon">Shop Ultra H₂ Luxe — ₦450,000 →</a>
         </div>
       </div>
     </section>
@@ -114,7 +114,7 @@ interface VideoItem {
             <p class="yt-disclaimer">Source: YouTube — educational only, not medical advice. Opens embedded, stays on H2Os. <a [href]="'https://www.youtube.com/watch?v=' + vid.youtubeId" target="_blank" rel="noopener" class="link">View on YouTube ↗</a></p>
           }
           <div class="modal-actions">
-            <a routerLink="/store" class="btn-neon sm" (click)="close()">Shop Ultra H₂</a>
+            <a routerLink="/store" class="btn-neon sm" (click)="close()">Shop Ultra H₂ Luxe</a>
             <a routerLink="/reviews" class="btn-ghost sm" (click)="close()">Community reviews</a>
           </div>
         </div>

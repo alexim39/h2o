@@ -147,7 +147,7 @@ export class ProtocolComponent {
     if (this.activity === 'travel') return { name: 'Ultra H₂ Go — ₦180,000', why: 'Compact + 6000-10000ppb for life on the move.' };
     if (this.goal === 'aging' || this.goal === 'gut') return { name: 'Ultra H₂ Pure — ₦98,000', why: 'Borosilicate purity + daily balance ritual.' };
     if (this.goal === 'energy' && this.activity === 'executive') return { name: 'Ultra H₂ Luxe — ₦450,000', why: 'Touch-screen flagship for desk + nightstand ritual.' };
-    return { name: 'Ultra H₂ Legacy — ₦1,300,000', why: 'Signature 1600ppb standard for max outcome.' };
+    return { name: 'Ultra H₂ Luxe — ₦450,000', why: 'Touch-screen flagship standard for max outcome.' };
   }
 
   waLink() {

@@ -47,7 +47,7 @@ import { CartService } from '../../../core/services/cart.service';
 
       <div class="announce">
         <div class="container">
-          <span class="pulse"></span> Free shipping on all orders • Ultra H₂ now ₦1,300,000 (was ₦1,541,000) • 30-day guarantee
+          <span class="pulse"></span> Free shipping on all orders • Ultra H₂ Luxe now ₦450,000 (was ₦520,000) • 30-day guarantee
         </div>
       </div>
     </header>
@@ -72,7 +72,7 @@ import { CartService } from '../../../core/services/cart.service';
       <a routerLink="/protocol" routerLinkActive="active" (click)="closeMenu()">30-Day Protocol</a>
       <a routerLink="/club" routerLinkActive="active" (click)="closeMenu()">H2Os Club</a>
       <a routerLink="/corporate" routerLinkActive="active" (click)="closeMenu()">Corporate Wellness</a>
-      <a routerLink="/store/ultra-h2-v1" (click)="closeMenu()">Ultra H₂ — Detail</a>
+      <a routerLink="/store/ultra-h2-luxe-v1" (click)="closeMenu()">Ultra H₂ Luxe — Detail</a>
       <div class="mobile-cta">
         <a routerLink="/store" class="btn-neon full" (click)="closeMenu()">Shop Store — From ₦40,000 →</a>
         <p class="free">✓ Free shipping on all orders • Paystack secure</p>

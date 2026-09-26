@@ -18,8 +18,8 @@ import { CartService } from '../../core/services/cart.service';
         <div class="empty">
           <img src="/images/ultraH2.jpeg" alt="Ultra H₂" class="empty-img" />
           <h4>Your cart is still pure</h4>
-          <p>Add H2Os Ultra H₂ and experience 1600 ppb hydration.</p>
-          <a routerLink="/store" (click)="closed.emit()" class="btn-neon">Shop Ultra H₂</a>
+          <p>Add H2Os Ultra H₂ Luxe and experience up to 8000 ppb hydration.</p>
+          <a routerLink="/store" (click)="closed.emit()" class="btn-neon">Shop Ultra H₂ Luxe</a>
           <a routerLink="/videos" (click)="closed.emit()" class="ghost">Watch how to use →</a>
         </div>
       } @else {

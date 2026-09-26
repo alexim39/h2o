@@ -93,7 +93,7 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 
               <div class="panel glass">
                 <h3>Store Health</h3>
                 <ul class="checks">
-                  <li>✓ Paystack — {{ cart.formatNGN(1300000) }} Ultra H₂ live • Free shipping</li>
+                  <li>✓ Paystack — {{ cart.formatNGN(450000) }} Ultra H₂ Luxe live • Free shipping</li>
                   <li>✓ Videos — 8 hydrogen assets in /public/videos</li>
                   <li>✓ DeepSeek AI — H2Os Assistant Doctor live</li>
                   <li>✓ DB connected — real records only</li>
@@ -657,7 +657,7 @@ export class MgtComponent implements OnInit {
   }
 
   qrCodes = signal<any[]>([]);
-  qrForm: any = { count: 20, product_sku: 'H2OS-ULTRA-H2', ppm_video_url: '/videos/hydrogen-h2o-test.mp4' };
+  qrForm: any = { count: 20, product_sku: 'H2OS-ULTRA-H2-LUXE', ppm_video_url: '/videos/hydrogen-h2o-test.mp4' };
   async loadQr(): Promise<void> {
     try {
       const res: any = await new Promise((resolve, reject) => {
@@ -730,7 +730,7 @@ export class MgtComponent implements OnInit {
 
   editing = signal(false);
   editId = signal<string | null>(null);
-  form: any = { brand:'H2Os', name:'', category:'Hydrogen Bottle', badge:'', tagline:'', description:'', image:'/images/ultraH2.jpeg', imagesText:'', videosText:'', price:1300000, compareAt:1541000, stock:20, rating:4.9 };
+  form: any = { brand:'H2Os', name:'', category:'Hydrogen Bottle', badge:'', tagline:'', description:'', image:'/images/ultraH2.jpeg', imagesText:'', videosText:'', price:450000, compareAt:520000, stock:50, rating:4.9 };
 
   previewImages(): string[] {
     const txt = (this.form.imagesText || '').split(/\n/).map((s:string)=>s.trim()).filter(Boolean);
@@ -781,7 +781,7 @@ export class MgtComponent implements OnInit {
 
   startAdd() {
     this.editId.set(null);
-    this.form = { brand:'H2Os', name:'', category:'Hydrogen Bottle', badge:'New', tagline:'Hydration, upgraded.', description:'', image:'/images/ultraH2.jpeg', imagesText:'', videosText:'', price:1300000, compareAt:1541000, stock:20, rating:4.9 };
+    this.form = { brand:'H2Os', name:'', category:'Hydrogen Bottle', badge:'New', tagline:'Hydration, upgraded.', description:'', image:'/images/ultraH2.jpeg', imagesText:'', videosText:'', price:450000, compareAt:520000, stock:50, rating:4.9 };
     this.editing.set(true);
     this.tab.set('products');
   }

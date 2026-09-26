@@ -10,15 +10,15 @@ export class ProductService {
   private api = environment.apiUrl;
 
   private readonly _placeholder: Product = {
-    id: 'ultra-h2-v1', name: 'Ultra H₂', brand: 'H2Os', category: 'Hydrogen Bottle', tagline: 'Hydration, upgraded.',
-    description: 'Advanced hydrogen infusion technology. 1200–1600 ppb in 3 min — SPE/PEM, platinum titanium.',
+    id: 'ultra-h2-luxe-v1', name: 'Ultra H₂ Luxe', brand: 'H2Os', category: 'Hydrogen Bottle', tagline: 'Smart touch flagship. Hydration, upgraded.',
+    description: 'Zenith of smart molecular health. Anodized aviation aluminum, real-time touch cycle tracking — 4000–8000 ppb in 5/10 min, 320 ml, Type-C USB, 2500 mAh.',
     image: '/images/ultraH2.jpeg', images: ['/images/ultraH2.jpeg'], videos: [], rating: 4.9, reviewsCount: 0,
-    variants: [{ id:'ultra-h2', name:'Ultra H₂', finish:'Crystal Glass • Matte Black', hex:'#0FD8B8', price:1300000, compareAt:1541000, sku:'H2OS-ULTRA-H2-500', image:'/images/ultraH2.jpeg', gradient:'linear-gradient(145deg,#0A0E14,#111A1E)', stock:47 }],
+    variants: [{ id:'ultra-h2-luxe', name:'Ultra H₂ Luxe', finish:'Aviation Aluminum • Smart Touch • 320 ml', hex:'#C9A227', price:450000, compareAt:520000, sku:'H2OS-ULTRA-H2-LUXE', image:'/images/ultraH2.jpeg', gradient:'linear-gradient(145deg,#0A0E14,#111A1E)', stock:50 }],
     specs: [], features: []
   };
   private readonly _catalog = signal<Product[]>([]);
   private readonly _product = signal<Product>(this._placeholder);
-  private readonly _selectedId = signal<VariantId>('ultra-h2');
+  private readonly _selectedId = signal<VariantId>('ultra-h2-luxe');
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
 
@@ -52,14 +52,19 @@ export class ProductService {
       const res: any = await firstValueFrom(this.http.get(`${this.api}/products`));
       const data = res?.data ?? res;
       const list: Product[] = Array.isArray(data) ? data : (data ? [data] : []);
-      this._catalog.set(list);
+      // Hero-first: keep local Luxe hero in the catalog even though the API
+      // only knows the legacy Ultra H₂ — Luxe stays the default product.
+      const hasLuxe = list.some(p => p.id === this._placeholder.id);
+      const merged: Product[] = hasLuxe ? list : [this._placeholder, ...list];
+      this._catalog.set(merged);
       this._loaded.set(true);
-      if (list.length) {
+      if (merged.length) {
         const curId = this._product().id;
-        const stillThere = list.some(p => p.id === curId);
+        const stillThere = merged.some(p => p.id === curId);
         if (!stillThere) {
-          this._product.set(list[0]);
-          this._selectedId.set(list[0].variants[0]?.id ?? 'ultra-h2');
+          const hero = merged.find(p => p.id === this._placeholder.id) ?? merged[0];
+          this._product.set(hero);
+          this._selectedId.set(hero.variants[0]?.id ?? 'ultra-h2-luxe');
         }
       } else {
         this._error.set('No products yet — add via MGT');
@@ -78,7 +83,7 @@ export class ProductService {
       const data = res?.data ?? res;
       if (data) {
         this._product.set(data);
-        this._selectedId.set(data.variants[0]?.id ?? 'ultra-h2');
+        this._selectedId.set(data.variants[0]?.id ?? 'ultra-h2-luxe');
         return data;
       }
       return null;
@@ -92,7 +97,7 @@ export class ProductService {
     const v = this.selectedVariant();
     if (v) return v;
     // minimal placeholder to avoid template crash before load
-    return { id:'ultra-h2', name:'Ultra H₂', finish:'', hex:'#0FD8B8', price:1300000, compareAt:1541000, sku:'H2OS-ULTRA-H2-500', image:'/images/ultraH2.jpeg', gradient:'', stock:0 };
+    return { id:'ultra-h2-luxe', name:'Ultra H₂ Luxe', finish:'', hex:'#C9A227', price:450000, compareAt:520000, sku:'H2OS-ULTRA-H2-LUXE', image:'/images/ultraH2.jpeg', gradient:'', stock:0 };
   }
 
   // MGT helpers — real API
@@ -124,7 +129,7 @@ export class ProductService {
     const found = this._catalog().find(p => p.id === id);
     if (found) {
       this._product.set(found);
-      this._selectedId.set(found.variants[0]?.id ?? 'ultra-h2');
+      this._selectedId.set(found.variants[0]?.id ?? 'ultra-h2-luxe');
     } else {
       this.loadProduct(id);
     }
@@ -137,15 +142,17 @@ export class ProductService {
       const v = prod.variants.find(vv => vv.id === id);
       if (v) return v;
     }
-    return undefined;
+    return this._placeholder.variants.find(v => v.id === id);
   }
 
   getProductByVariant(id: VariantId): Product | undefined {
-    return this._catalog().find(p => p.variants.some(v => v.id === id));
+    return this._catalog().find(p => p.variants.some(v => v.id === id))
+      ?? (this._placeholder.variants.some(v => v.id === id) ? this._placeholder : undefined);
   }
 
   getProduct(id: string): Product | undefined {
-    return this._catalog().find(p => p.id === id);
+    return this._catalog().find(p => p.id === id)
+      ?? (this._placeholder.id === id ? this._placeholder : undefined);
   }
 
   galleryAngles = computed(() => Array.from({ length: 8 }, (_, i) => i * 45));

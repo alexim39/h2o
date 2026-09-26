@@ -26,7 +26,7 @@ import { ToastService } from '../../core/services/toast.service';
 
           <div class="actions">
             <a routerLink="/videos" class="btn-ghost sm">Watch video testimonials →</a>
-            <a routerLink="/product" class="btn-neon sm">Shop Ultra H₂</a>
+            <a routerLink="/product" class="btn-neon sm">Shop Ultra H₂ Luxe</a>
           </div>
         </div>
 

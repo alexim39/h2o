@@ -63,6 +63,18 @@ type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest';
           <span class="count">{{ filtered().length }} of {{ product.catalog().length }} bottles • Free shipping</span>
         </div>
 
+        @if (product.loading()) {
+          <div class="loading glass"><p>Loading bottles…</p></div>
+        }
+
+        @if (product.error() && !product.loading()) {
+          <div class="error glass">
+            <p><strong>Couldn’t load products.</strong> {{ product.error() }}</p>
+            <p class="muted">Check that WAMP Apache + MySQL are running (green icon), then retry. API: http://localhost:8080/h2o-api/public/health</p>
+            <button class="btn-neon sm" (click)="retry()">Retry →</button>
+          </div>
+        }
+
         <div class="grid">
           @for (p of paginated(); track p.id) {
             <article class="card glass" [class.featured]="p.featured">
@@ -97,7 +109,7 @@ type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest';
               </div>
             </article>
           }
-          @if (paginated().length===0) {
+          @if (!product.loading() && !product.error() && paginated().length===0) {
             <div class="empty glass">
               <p>No bottles match your filters.</p>
               <button class="btn-ghost sm" (click)="clear()">Clear filters</button>
@@ -114,12 +126,12 @@ type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest';
         }
 
         <div class="highlight glass">
-          <img src="/images/ultraH2.jpeg" alt="Ultra H₂" />
+          <img src="/images/ultraH2.jpeg" alt="Ultra H₂ Luxe" />
           <div>
             <span class="eyebrow">H2Os Signature</span>
-            <h2>Ultra H₂ — The ritual that started it all</h2>
-            <p>Crystal glass, 1600ppb, loop cap, timer. The benchmark. Future H2Os bottles share this DNA. ✓ Free shipping on all orders</p>
-            <a routerLink="/store/ultra-h2-v1" class="btn-neon">Shop Ultra H₂ — ₦1,300,000 →</a>
+            <h2>Ultra H₂ Luxe — The touch flagship ritual</h2>
+            <p>Aviation aluminum, smart touch screen, up to 8000ppb, Type-C. The new benchmark. ✓ Free shipping on all orders</p>
+            <a routerLink="/store/ultra-h2-luxe-v1" class="btn-neon">Shop Ultra H₂ Luxe — ₦450,000 →</a>
           </div>
         </div>
       </div>
@@ -174,6 +186,11 @@ type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest';
     .btn-neon.sm, .btn-ghost.sm{ padding:8px 12px; font-size:12px; flex:1; justify-content:center; }
     .empty{ grid-column: 1/-1; border-radius:16px; padding:40px; text-align:center; }
     .empty p{ color:var(--text-secondary); }
+    .loading{ border-radius:16px; padding:32px; text-align:center; margin-bottom:16px; }
+    .loading p{ color:var(--text-secondary); }
+    .error{ border-radius:16px; padding:24px; text-align:center; margin-bottom:16px; border-color: rgba(255,77,106,0.35); display:flex; flex-direction:column; gap:10px; align-items:center; }
+    .error p{ color:var(--text-secondary); font-size:13px; }
+    .error .muted{ font-size:12px; color:var(--text-muted); }
     .pagination{ display:flex; align-items:center; justify-content:center; gap:12px; margin:18px 0 8px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted); }
     .highlight{ margin-top:24px; border-radius:20px; padding:18px; display:grid; grid-template-columns: 160px 1fr auto; gap:18px; align-items:center; }
     .highlight img{ width:100%; border-radius:14px; border:1px solid var(--border); }
@@ -249,6 +266,7 @@ export class ProductsComponent {
   clear() {
     this.q.set(''); this.brand.set('all'); this.category.set('all'); this.sort.set('featured'); this.page.set(1);
   }
+  retry() { this.product.loadCatalog(); }
   nextPage() { if (this.page() < this.totalPages()) this.page.update(p => p + 1); }
   prevPage() { if (this.page() > 1) this.page.update(p => p - 1); }
 }

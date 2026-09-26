@@ -32,11 +32,11 @@ import { ToastService } from '../../core/services/toast.service';
           <span class="eyebrow">30-Day Cellular Detox Protocol • Energy • Sleep • Recovery</span>
           <h1>
             <span class="kicker">H2Os presents</span>
-            <span class="title">Energy. Sleep. <em>Recovery.</em></span>
-            <span class="sub">30-day transformation — powered by Ultra H₂. Hydration, upgraded.</span>
+            <span class="title"><span class="brand-wellness">Wellness</span> for <em>Everyday Life.</em></span>
+            <span class="sub">30-day transformation — powered by H₂Os. Hydration, upgraded.</span>
           </h1>
           <p class="lead">
-            For Executives, Athletes & High Performers. <strong>1200–1600 ppb</strong> ultra-pure H₂ in 3 minutes — morning clarity, afternoon recovery, evening calm.
+            For every body, every day — parents, professionals, athletes, students, and seniors. <strong>4000–8000 ppb</strong> ultra-pure H₂ in 5–10 minutes — morning clarity, afternoon recovery, evening calm.
           </p>
 
           <div class="price-row">
@@ -47,8 +47,8 @@ import { ToastService } from '../../core/services/toast.service';
 
           <div class="cta-row">
             <a routerLink="/protocol" class="btn-neon">Start My 30-Day Protocol <span>→</span></a>
-            <a routerLink="/store/ultra-h2-v1" class="btn-ghost video-btn">
-              Shop Ultra H₂ — {{ cart.formatNGN(selected().price) }}
+            <a routerLink="/store/ultra-h2-luxe-v1" class="btn-ghost video-btn">
+              Shop Ultra H₂ Luxe — {{ cart.formatNGN(selected().price) }}
             </a>
           </div>
           <div class="other-products">
@@ -62,10 +62,10 @@ import { ToastService } from '../../core/services/toast.service';
           </div>
 
           <div class="micro">
-            <div><strong>500ml</strong><span>Perfect serve</span></div>
-            <div><strong>3 min</strong><span>1600 ppb</span></div>
-            <div><strong>18×</strong><span>Per charge</span></div>
-            <div><strong>USB-C</strong><span>Loop cap</span></div>
+            <div><strong>320ml</strong><span>Smart serve</span></div>
+            <div><strong>10 min</strong><span>8000 ppb</span></div>
+            <div><strong>Touch</strong><span>Smart screen</span></div>
+            <div><strong>USB-C</strong><span>Type-C charge</span></div>
           </div>
         </div>
 
@@ -135,7 +135,7 @@ import { ToastService } from '../../core/services/toast.service';
               <span>Now</span><strong>{{ cart.formatNGN(selected().price) }}</strong>
             </div>
           </div>
-          <p class="caption">Ultra Hydrogen Bottle • Original {{ cart.formatNGN(selected().compareAt!) }} → Now {{ cart.formatNGN(selected().price) }} • Hydration, upgraded.</p>
+          <p class="caption">Ultra H₂ Luxe • Original {{ cart.formatNGN(selected().compareAt!) }} → Now {{ cart.formatNGN(selected().price) }} • Hydration, upgraded.</p>
         </div>
       </div>
     </section>
@@ -255,7 +255,7 @@ import { ToastService } from '../../core/services/toast.service';
               <li><strong>One-touch cycle</strong> — 3 min (daily) / 6 min (max) • Timer display.</li>
             </ul>
             <div class="actions">
-              <button class="btn-neon" (click)="addToCart()">Add Ultra H₂ — {{ cart.formatNGN(selected().price) }}</button>
+              <button class="btn-neon" (click)="addToCart()">Add Ultra H₂ Luxe — {{ cart.formatNGN(selected().price) }}</button>
               <a routerLink="/product" class="btn-ghost">View details</a>
               <a routerLink="/videos" class="btn-ghost">Watch how to use</a>
             </div>
@@ -325,12 +325,12 @@ import { ToastService } from '../../core/services/toast.service';
     <section class="cta-final">
       <div class="container cta-box glass">
         <div>
-          <span class="eyebrow">H2Os — Ultra H₂ • Limited batch</span>
+          <span class="eyebrow">H2Os — Ultra H₂ Luxe • Limited batch</span>
           <h2>Begin your hydrogen ritual today.</h2>
-          <p>Free express delivery • 30-day guarantee • Paystack secure. More H2Os bottles coming soon — start with Ultra H₂.</p>
+          <p>Free express delivery • 30-day guarantee • Paystack secure. More H2Os bottles coming soon — start with Ultra H₂ Luxe.</p>
         </div>
         <div class="cta-actions">
-          <a routerLink="/product" class="btn-neon large">Shop Ultra H₂ — {{ cart.formatNGN(selected().price) }} →</a>
+          <a routerLink="/product" class="btn-neon large">Shop Ultra H₂ Luxe — {{ cart.formatNGN(selected().price) }} →</a>
           <span class="secure">🔒 Paystack • SSL • 256-bit • H2Os</span>
         </div>
       </div>
@@ -369,12 +369,18 @@ import { ToastService } from '../../core/services/toast.service';
     .health-title{ font-family:'Space Grotesk',sans-serif; font-size: clamp(22px, 3.2vw, 30px); font-weight:800; letter-spacing:-0.02em; line-height:1; margin: 6px 0 4px; }
     .health-title em{ font-style:normal; color:var(--neon); text-shadow: 0 0 14px rgba(0,255,136,0.32); }
     .health-sub{ font-size:12px; color:var(--text-secondary); letter-spacing:0.02em; }
-    .copy h1 { margin: 14px 0 14px; line-height: 0.9; }
-    .kicker { display:block; font-family:'Space Grotesk',sans-serif; font-size: 13px; letter-spacing:0.18em; text-transform:uppercase; color: var(--neon); font-weight:700; }
-    .title { display:block; font-family:'Space Grotesk',sans-serif; font-size: clamp(42px, 6vw, 64px); font-weight:700; letter-spacing:-0.03em; }
+    .copy h1 { margin: 14px 0 4px; line-height: 1.1; }
+    .kicker { display:block; font-family:'Space Grotesk',sans-serif; font-size: 13px; letter-spacing:0.18em; text-transform:uppercase; color: var(--neon); font-weight:700; margin-bottom: 12px; }
+    .title { display:block; font-family:'Space Grotesk',sans-serif; font-size: clamp(42px, 6vw, 64px); font-weight:700; letter-spacing:-0.03em; line-height: 1.06; margin-bottom: 12px; }
     .title em { font-style: normal; color: var(--neon); text-shadow: 0 0 20px rgba(0,255,136,0.35); }
-    .sub { display:block; font-size: clamp(16px,2vw,18px); color: var(--text-secondary); font-weight:400; margin-top: 6px; letter-spacing:-0.01em; }
-    .lead { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 520px; margin: 14px 0 12px; }
+    .brand-wellness{
+      background: linear-gradient(92deg, #FFD60A 0%, #00FF88 55%, #00E8C8 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 14px rgba(0,255,136,0.28));
+      letter-spacing:-0.02em; white-space: nowrap;
+    }
+    .sub { display:block; font-size: clamp(16px,2vw,18px); color: var(--text-secondary); font-weight:400; margin-top: 0; line-height: 1.5; letter-spacing:-0.01em; }
+    .lead { font-size: 15px; color: var(--text-secondary); line-height: 1.8; max-width: 520px; margin: 18px 0 12px; }
     .lead strong { color: var(--text-primary); font-weight:700; }
     .price-row { display:flex; align-items:baseline; gap:10px; margin: 6px 0 14px; }
     .price { font-size:24px; font-weight:800; }
@@ -718,6 +724,9 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     // premium: low opacity handled via CSS, ensure video doesn't block LCP
     vid.preload = 'metadata';
     vid.muted = true;
+    (vid as any).defaultMuted = true;
+    vid.volume = 0;
+    vid.setAttribute('muted', '');
     vid.playsInline = true;
     vid.loop = true;
     if (paused) {

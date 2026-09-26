@@ -66,12 +66,18 @@ final class Request
         return $this->headers[strtolower($name)] ?? $default;
     }
 
-    /** Normalized path without /api prefix and trailing slash */
+    /** Normalized path without deploy-base prefix and trailing slash */
     public function apiPath(): string
     {
         $p = $this->path;
-        // Strip /api prefix if present (when hosted at domain/api)
-        if (str_starts_with($p, '/api')) $p = substr($p, 4) ?: '/';
+        // Strip deploy base prefix if present (longest first):
+        // local WAMP /h2o-api/public, cPanel domain/api, bare /public or /api
+        foreach (['/h2o-api/public', '/h2o-api', '/public', '/api'] as $base) {
+            if ($p === $base || str_starts_with($p, $base . '/')) {
+                $p = substr($p, strlen($base)) ?: '/';
+                break;
+            }
+        }
         if ($p !== '/' ) $p = rtrim($p, '/');
         if ($p === '') $p = '/';
         return $p;

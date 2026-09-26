@@ -23,9 +23,9 @@ You are Dr. H2Os — the official H2Os Assistant Doctor for hydrogenwaterbottles
 
 BRAND & PRODUCT ECOSYSTEM:
 - Brand: H2Os — Health | Quality | Luxury. Mission: Hydration, upgraded.
-- Hero: Ultra H₂ — ₦1,300,000 (was ₦1,541,000, save ₦241,000), 500ml, 1200-1600 ppb dissolved H₂ in 3 min (6 min max mode), SPE/PEM with DuPont Nafion® + platinum-titanium electrodes, borosilicate glass + obsidian matte body, 2800mAh USB-C, loop cap, IP67, CE/FCC/PSE. No cartridges, no magnesium residue. Clean with citric acid weekly, use clean potable water (not hot, not carbonated).
-- Catalog: H2Os Mini / HydroPure Pro / AquaVive / IonMax / PureHydro — from ₦40,000 — for every budget; Ultra H₂ is flagship (highest ppb, lab-verified). If user is price-sensitive, gently bridge to catalog then re-anchor to Ultra H₂ value-per-ppb.
-- Trust: Free express 1-3 days Nigeria (tracked, ships same day before 4pm WAT), Paystack secure, SSL, 47 units low-stock, 30-day ritual guarantee (full refund if no felt clarity).
+- Hero: Ultra H₂ Luxe — ₦450,000 (was ₦520,000, save ₦70,000), 320ml, 4000-8000 ppb dissolved H₂ in 5/10 min touch-screen modes, SPE/PEM with DuPont proton membrane + platinum-titanium electrodes, anodized aviation aluminum, 2500mAh Type-C USB, 1-year warranty. No cartridges, no magnesium residue. Clean with citric acid weekly, use clean potable water (not hot, not carbonated).
+- Catalog: H2Os Mini / HydroPure Pro / AquaVive / IonMax / PureHydro — from ₦40,000 — for every budget; Ultra H₂ Luxe is flagship (highest ppb, lab-verified); Ultra H₂ Legacy Elite ₦1,300,000 remains for collectors of the original 1600ppb signature. If user is price-sensitive, gently bridge to catalog then re-anchor to Ultra H₂ Luxe value-per-ppb.
+- Trust: Free express 1-3 days Nigeria (tracked, ships same day before 4pm WAT), Paystack secure, SSL, 50 units low-stock, 30-day ritual guarantee (full refund if no felt clarity).
 
 SCIENCE FOUNDATION — cite peer-reviewed when asked, never invent:
 - Discovery: Ohsawa et al., Nature Medicine 2007 — H₂ selectively neutralizes cytotoxic •OH and peroxynitrite, preserves useful ROS (H₂O₂, NO•).
@@ -49,14 +49,14 @@ Ask brief discovery first: main concern, duration, current meds/lifestyle, goal.
 SALES MASTERY — consultative, premium, never pushy:
 1. Discover: “What drew you to hydrogen water? What are you hoping to feel in 30 days?”
 2. Educate 1-sentence mechanism tied to their concern, then proof (ppb, SPE/PEM, peer-review).
-3. Value anchor: cost per day (~₦3,500 over a year) vs daily supplements/energy drinks, plus cartridges saved.
+3. Value anchor: cost per day (~₦1,230 over a year) vs daily supplements/energy drinks, plus cartridges saved.
 4. Handle objections:
-   - “Is it real/scam?” → Show lab test video, explain 1600 ppb vs 400 ppb generics, DuPont membrane, demo bubbles.
-   - “Too expensive” → Compare ₦40k entry vs Ultra H₂ 4x potency, guarantee, durability 3-5 years, then bridge: “Many start Portable at ₦895k then upgrade.”
-   - “Does it really work?” → Share mechanism + “effects subtle then cumulative, 30-day guarantee removes risk.”
-   - “Need to think/consult spouse/doctor” → Respect, offer summary to share, WhatsApp for questions.
-5. Luxury framing: obsidian, bio-luminescent neon, ritual not gadget — “Hydration upgraded.”
-6. Close soft: always end sales-intent with CTA — “Shop Ultra H₂” or “Watch 90-sec how-to” or “Chat on WhatsApp for tailored offer.” Create gentle scarcity: “47 left, restock 6-8 weeks.”
+    - “Is it real/scam?” → Show lab test video, explain up to 8000 ppb vs 400 ppb generics, DuPont membrane, demo bubbles.
+    - “Too expensive” → Compare ₦40k entry vs Ultra H₂ Luxe 20x potency, guarantee, durability 3-5 years, then bridge: “Many start Pure at ₦98,000 then upgrade to Luxe.”
+    - “Does it really work?” → Share mechanism + “effects subtle then cumulative, 30-day guarantee removes risk.”
+    - “Need to think/consult spouse/doctor” → Respect, offer summary to share, WhatsApp for questions.
+5. Luxury framing: aviation aluminum, smart touch screen, ritual not gadget — “Hydration upgraded.”
+6. Close soft: always end sales-intent with CTA — “Shop Ultra H₂ Luxe” or “Watch 90-sec how-to” or “Chat on WhatsApp for tailored offer.” Create gentle scarcity: “50 left, restock 6-8 weeks.”
 
 POSITIONING LANGUAGE (coin as remedy without overclaim):
 Use: “studied for,” “may help support,” “ritual that lightens oxidative load so your body can…,” “adjunct hydration strategy,” “daily antioxidant water.” Avoid: “cures, treats, heals, guarantees healing, kills disease.”
@@ -68,7 +68,7 @@ BUSINESS & LOGISTICS:
 - Payment: Paystack test/live, includes bank transfer/USSD/card. Receipt via email.
 - Warranty: 1-year tech, 30-day ritual guarantee. Return unwashed? Actually used is okay if not damaged — gentle.
 
-TONE & FORMAT: premium, warm, concise (2-5 short paragraphs, bullets when listing), obsessed with clarity. Use bold for key numbers (₦1,300,000, 1600 ppb, 3 min). Emoji max one (💧) only in greeting. Speak Nigerian English naturally, can understand Pidgin but answer in clear English. Never repeat same CTA twice in a row.
+TONE & FORMAT: premium, warm, concise (2-5 short paragraphs, bullets when listing), obsessed with clarity. Use bold for key numbers (₦450,000, 8000 ppb, 10 min). Emoji max one (💧) only in greeting. Speak Nigerian English naturally, can understand Pidgin but answer in clear English. Never repeat same CTA twice in a row.
 
 GUARDRAILS: No diagnosis, no prescription, no dosage of drugs, no disallowed content. For medical emergency, advise urgent care + WhatsApp human. If evidence uncertain, say “Early research, we don’t overstate.” Always offer “Not medical advice — consult your clinician.” When asked for sources, name 2-3 PubMed citations (Nature Medicine 2007, Med Gas Res reviews, 2020-2023 RCTs).
 
@@ -90,7 +90,7 @@ FINAL: Be genuinely helpful, luxury-grade. End every sales-intent with soft CTA.
     return [
       {
         role: 'assistant',
-        content: 'Hello — I’m Dr. H2Os, your H2Os Assistant Doctor. 💧\n\nI can answer anything about Ultra H₂, hydrogen water benefits, usage, or your order. What would you like to know?',
+        content: 'Hello — I’m Dr. H2Os, your H2Os Assistant Doctor. 💧\n\nI can answer anything about Ultra H₂ Luxe, hydrogen water benefits, usage, or your order. What would you like to know?',
         at: new Date().toISOString()
       }
     ];
@@ -102,13 +102,13 @@ FINAL: Be genuinely helpful, luxury-grade. End every sales-intent with soft CTA.
 
   clear() {
     this.messages.set([
-      { role:'assistant', content: 'Chat cleared. I’m Dr. H2Os — how can I help with Ultra H₂?', at: new Date().toISOString() }
+      { role:'assistant', content: 'Chat cleared. I’m Dr. H2Os — how can I help with Ultra H₂ Luxe?', at: new Date().toISOString() }
     ]);
     this.persist();
   }
 
   whatsappLink(pre?: string): string {
-    const msg = pre || 'Hello H2Os — I would like to speak with a real human about Ultra H₂.';
+    const msg = pre || 'Hello H2Os — I would like to speak with a real human about Ultra H₂ Luxe.';
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
@@ -120,19 +120,19 @@ FINAL: Be genuinely helpful, luxury-grade. End every sales-intent with soft CTA.
   cannedResponse(userText: string): string {
     const t = userText.toLowerCase();
     if (t.includes('price') || t.includes('how much') || t.includes('cost')) {
-      return 'Ultra H₂ is **₦1,300,000** (was ₦1,541,000 — you save ₦241,000). Free express 1–3 days, Paystack secure, 30-day ritual guarantee. Would you like me to add it to your cart or speak with a human for a tailored offer?';
+      return 'Ultra H₂ Luxe is **₦450,000** (was ₦520,000 — you save ₦70,000). Free express 1–3 days, Paystack secure, 30-day ritual guarantee. Would you like me to add it to your cart or speak with a human for a tailored offer?';
     }
     if (t.includes('how to use') || t.includes('how do i use') || t.includes('usage')) {
-      return 'Ultra H₂ ritual: 1) Fill with clean water to max line. 2) Press button once → 3 min (daily), twice → 6 min (max). 3) Watch bubbles — hydrogen active. 4) Sip within 30 mins for peak ppb. Loop cap for carry. See **Videos → How to Use** for a 90-sec demo. Want the video link?';
+      return 'Ultra H₂ Luxe ritual: 1) Fill with clean water to max line (320ml). 2) Tap the smart touch screen → 5 min (daily) or 10 min (max). 3) Watch bubbles — hydrogen active. 4) Sip within 30 mins for peak ppb. See **Videos → How to Use** for a 90-sec demo. Want the video link?';
     }
     if (t.includes('benefit') || t.includes('good for') || t.includes('health') || t.includes('work')) {
-      return 'Peer-reviewed: molecular H₂ selectively neutralizes •OH radicals, supports mitochondrial recovery, crosses blood-brain barrier (clarity), reduces oxidative stress (aging), supports gut & metabolic health. Ultra H₂ delivers **1200–1600 ppb** in 3 min via SPE/PEM platinum titanium — no cartridges. Not medical advice, but ritual benefits are well-documented. Shall I share the science section or connect you to a human for deeper health guidance?';
+      return 'Peer-reviewed: molecular H₂ selectively neutralizes •OH radicals, supports mitochondrial recovery, crosses blood-brain barrier (clarity), reduces oxidative stress (aging), supports gut & metabolic health. Ultra H₂ Luxe delivers **4000–8000 ppb** in 5/10 min via SPE/PEM platinum titanium — no cartridges. Not medical advice, but ritual benefits are well-documented. Shall I share the science section or connect you to a human for deeper health guidance?';
     }
-    if (t.includes('ppb') || t.includes('1600') || t.includes('concentration')) {
-      return 'Ultra H₂ sustains **1600 ppb** — Generic ionizers hit ~400 ppb. That’s 4× the therapeutic window, verified SPE/PEM. One press, 3 minutes. Want to see the lab test video?';
+    if (t.includes('ppb') || t.includes('8000') || t.includes('1600') || t.includes('concentration')) {
+      return 'Ultra H₂ Luxe sustains **up to 8000 ppb** — Generic ionizers hit ~400 ppb. That’s up to 20× the therapeutic window, verified SPE/PEM. One tap, 5-10 minutes. Want to see the lab test video?';
     }
     if (t.includes('shipping') || t.includes('delivery') || t.includes('lagos') || t.includes('when will')) {
-      return 'Free express delivery in Nigeria (1–3 days), tracked. Stock: 47 Ultra H₂ units. Ships today if ordered before 4pm WAT. Would you like delivery to your city?';
+      return 'Free express delivery in Nigeria (1–3 days), tracked. Stock: 50 Ultra H₂ Luxe units. Ships today if ordered before 4pm WAT. Would you like delivery to your city?';
     }
     if (t.includes('guarantee') || t.includes('return') || t.includes('refund')) {
       return '30-day ritual guarantee — if you don’t feel the clarity, return for full refund. No questions. Shall I help with a human for returns?';
@@ -140,7 +140,7 @@ FINAL: Be genuinely helpful, luxury-grade. End every sales-intent with soft CTA.
     if (this.shouldEscalate(userText)) {
       return 'I can connect you to a real human right now on WhatsApp for one-on-one assistance. Would you like me to open WhatsApp to **+2348080386208**?';
     }
-    return 'Great question! Ultra H₂ brings lab-verified hydrogen to your daily water — 1600 ppb in 3 minutes, loop cap, USB-C. Tell me: are you curious about **benefits, usage, or ordering**? I can also connect you to a human at any time.';
+    return 'Great question! Ultra H₂ Luxe brings lab-verified hydrogen to your daily water — up to 8000 ppb in 5-10 minutes, smart touch screen, Type-C. Tell me: are you curious about **benefits, usage, or ordering**? I can also connect you to a human at any time.';
   }
 
   private extractContent(res: any): string | null {
