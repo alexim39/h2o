@@ -32,7 +32,7 @@ import { ToastService } from '../../core/services/toast.service';
           <span class="eyebrow">30-Day Cellular Detox Protocol • Energy • Sleep • Recovery</span>
           <h1>
             <span class="kicker">H2Os presents</span>
-            <span class="title"><span class="brand-wellness">Wellness</span> for <em>Everyday Life.</em></span>
+            <span class="title"><span class="brand-wellness">Your </span> Everyday <em>Wellness.</em></span>
             <span class="sub">30-day transformation — powered by H₂Os. Hydration, upgraded.</span>
           </h1>
           <p class="lead">
