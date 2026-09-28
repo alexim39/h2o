@@ -119,7 +119,7 @@ type Tab = 'overview' | 'products' | 'orders' | 'reviews' | 'media' | 'chats' | 
               <div class="edit-card glass">
                 <h3>{{ editId() ? 'Edit' : 'Add' }} Product</h3>
                 <form class="form grid2" (ngSubmit)="save()">
-                  <div class="group"><label>Brand *</label><input [(ngModel)]="form.brand" name="brand" required placeholder="H2Os / HydroPure / AquaVive" /></div>
+                  <div class="group"><label>Brand *</label><input [(ngModel)]="form.brand" name="brand" required placeholder="H2Os" /></div>
                   <div class="group"><label>Name *</label><input [(ngModel)]="form.name" name="name" required placeholder="Ultra H₂ Mini" /></div>
                   <div class="group"><label>Category</label><input [(ngModel)]="form.category" name="category" placeholder="Hydrogen Bottle" /></div>
                   <div class="group"><label>Badge</label><input [(ngModel)]="form.badge" name="badge" placeholder="Bestseller / New / Limited" /></div>

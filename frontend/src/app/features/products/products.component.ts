@@ -19,7 +19,7 @@ type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest';
           <div>
             <span class="eyebrow">H2Os Store • Hydrogen, curated</span>
             <h1>Hydrogen Water <em>Bottles</em></h1>
-            <p>Ultra H₂ and curated hydrogen brands — one ritual, many bottles. All SPE/PEM, lab-verified. ✓ Free shipping on all orders</p>
+            <p>Ultra H₂ Luxe and the H2Os family — one ritual, many bottles. Luxe • Go • Pure • Legacy Elite. All SPE/PEM, lab-verified. ✓ Free shipping on all orders</p>
           </div>
           <div class="head-stats glass">
             <div><strong>{{ filtered().length }}</strong><span>Products</span></div>
@@ -57,7 +57,7 @@ type SortKey = 'featured' | 'priceAsc' | 'priceDesc' | 'rating' | 'newest';
         </div>
 
         <div class="chips">
-          @for (b of ['all','H2Os','HydroPure','AquaVive','IonMax','PureHydro']; track b) {
+          @for (b of brandChips(); track b) {
             <button class="chip" [class.active]="brand()===b" (click)="brand.set(b)">{{ b === 'all' ? 'All' : b }}</button>
           }
           <span class="count">{{ filtered().length }} of {{ product.catalog().length }} bottles • Free shipping</span>
@@ -214,6 +214,7 @@ export class ProductsComponent {
 
   brands = computed(() => [...new Set(this.product.catalog().map(p => p.brand))]);
   categories = computed(() => [...new Set(this.product.catalog().map(p => p.category))]);
+  brandChips = computed<string[]>(() => ['all', ...this.brands()]);
 
   filtered = computed<Product[]>(() => {
     let arr = [...this.product.catalog()];
