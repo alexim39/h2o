@@ -18,7 +18,7 @@ import { LoadingService } from '../../../core/services/loading.service';
         <div class="spinner">
           <span class="ring"></span>
         </div>
-        <span class="label">Loading — Health | Quality | Luxury</span>
+        <span class="label">Loading — <span class="brand-wellness">Wellness</span> | Quality | Luxury</span>
       </div>
     }
   `,

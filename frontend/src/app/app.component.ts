@@ -83,7 +83,7 @@ import { SeoService } from './core/services/seo.service';
       filter: blur(0.3px);
     }
     .crown-watermark::after{
-      content:"H2Os  •  Health | Quality | Luxury";
+      content:"H2Os  •  Wellness | Quality | Luxury";
       position:absolute; left:50%; top:108%; transform: translateX(-50%);
       font-family:'Space Grotesk',sans-serif; font-size: 11px; font-weight:700; letter-spacing:0.28em; text-transform:uppercase;
       color: rgba(255,255,255,0.018); white-space:nowrap;

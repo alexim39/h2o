@@ -11,11 +11,11 @@ import { RouterLink } from '@angular/router';
         <div class="grid">
           <div class="brand">
             <span class="logo-wrap">
-              <img src="/images/logo.png" alt="H2Os — Health | Quality | Luxury" class="logo-img" />
+              <img src="/images/logo.png" alt="H2Os — Wellness | Quality | Luxury" class="logo-img" />
             </span>
             <div>
               <strong><!-- H2Os —  -->Ultra H₂</strong>
-              <span>hydrogenwaterbottles.store • Health | Quality | Luxury • Hydration, upgraded.</span>
+              <span>Your Everyday <span class="brand-wellness">Wellness</span> • Wellness | Quality | Luxury • hydrogenwaterbottles.store</span>
             </div>
           </div>
           <div class="col">

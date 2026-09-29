@@ -8,7 +8,7 @@ import { RouterLink } from '@angular/router';
   template: `
     <section class="hero-science">
       <div class="container">
-        <span class="eyebrow">H2Os • Science • Health • Longevity</span>
+        <span class="eyebrow">H2Os • Science • Wellness • Longevity</span>
         <h1>Why your body <em>needs</em> hydrogen water</h1>
         <p class="lead">Stay Healthy <strong>& Add Years</strong> to Your Life — by drinking the purest hydrogen water daily. Peer-reviewed, lab-verified, ritual-grade.</p>
         <div class="hero-stats">

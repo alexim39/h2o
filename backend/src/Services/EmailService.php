@@ -19,7 +19,7 @@ final class EmailService
     public function __construct()
     {
         $this->fromEmail   = (string)\Config::get('MAIL_FROM_ADDRESS', 'sales@hydrogenwaterbottles.store');
-        $this->fromName    = (string)\Config::get('MAIL_FROM_NAME', 'H2Os — Health | Quality | Luxury');
+        $this->fromName    = (string)\Config::get('MAIL_FROM_NAME', 'H2Os — Wellness | Quality | Luxury');
         $this->replyTo     = (string)\Config::get('MAIL_REPLY_TO', 'sales@hydrogenwaterbottles.store');
         $this->adminSales  = 'sales@hydrogenwaterbottles.store';
         $this->adminBackup = 'schooltraz@gmail.com';
@@ -31,7 +31,7 @@ final class EmailService
 
     public function sendUserConfirmation(array $order, string $toEmail): bool
     {
-        $subject = 'Your H2Os Ritual is Confirmed — ' . ($order['reference'] ?? '') . ' • Health | Quality | Luxury';
+        $subject = 'Your H2Os Ritual is Confirmed — ' . ($order['reference'] ?? '') . ' • Wellness | Quality | Luxury';
         $html = $this->userTemplate($order, false);
         $text = $this->userText($order, false);
         $ok = $this->send($toEmail, $subject, $html, $text);
@@ -265,7 +265,7 @@ final class EmailService
         <!-- Footer -->
         <tr>
           <td style="background:#07080A; border-top:1px solid #1E232E; padding:18px 28px; text-align:center;">
-            <div style="font-family:monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#6B7280;">H2Os — Health | Quality | Luxury • hydrogenwaterbottles.store</div>
+            <div style="font-family:monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:#6B7280;">H2Os — Wellness | Quality | Luxury • hydrogenwaterbottles.store</div>
             <div style="margin-top:8px; font-size:11px; color:#6B7280; line-height:1.5;">3RD FLOOR, BANK OF AGRICULTURE BUILDING, Opposite Eco Bank, Olu-Obasanjo Road, Port Harcourt.</div>
             <div style="margin-top:10px; font-size:10px; color:#3A404E; line-height:1.6;">You received this because you ordered at H2Os. Free shipping on all orders • 30-day guarantee.<br><a href="{$site}" style="color:#3A404E; text-decoration:underline;">Visit store</a> • <a href="https://wa.me/2348080386208" style="color:#3A404E; text-decoration:underline;">Support</a></div>
           </td>

@@ -25,15 +25,15 @@ import { ToastService } from '../../core/services/toast.service';
       <div class="container hero-grid">
         <div class="copy">
           <div class="health-hero glass">
-            <span class="health-eyebrow">Health • Longevity • Purity</span>
+            <span class="health-eyebrow">Wellness • Longevity • Purity</span>
             <h2 class="health-title">Stay Healthy <em>& Add Years</em> to Your Life</h2>
-            <p class="health-sub">by drinking the purest hydrogen water — daily ritual, cellular renewal</p>
+            <p class="health-sub">30-day ritual for your everyday wellness — powered by H₂Os.</p>
           </div>
           <span class="eyebrow">30-Day Cellular Detox Protocol • Energy • Sleep • Recovery</span>
           <h1>
             <span class="kicker">H2Os presents</span>
             <span class="title"><span class="brand-wellness">Your </span> Everyday <em>Wellness.</em></span>
-            <span class="sub">30-day transformation — powered by H₂Os. Hydration, upgraded.</span>
+            <span class="sub">30-day transformation — powered by H₂Os. Your everyday wellness, upgraded.</span>
           </h1>
           <p class="lead">
             For every body, every day — parents, professionals, athletes, students, and seniors. <strong>4000–8000 ppb</strong> ultra-pure H₂ in 5–10 minutes — morning clarity, afternoon recovery, evening calm.
@@ -325,8 +325,8 @@ import { ToastService } from '../../core/services/toast.service';
     <section class="cta-final">
       <div class="container cta-box glass">
         <div>
-          <span class="eyebrow">H2Os — Ultra H₂ Luxe • Limited batch</span>
-          <h2>Begin your hydrogen ritual today.</h2>
+          <span class="eyebrow">H2Os — Your Everyday Wellness • Limited batch</span>
+          <h2>Begin your everyday wellness today.</h2>
           <p>Free express delivery • 30-day guarantee • Paystack secure. More H2Os bottles coming soon — start with Ultra H₂ Luxe.</p>
         </div>
         <div class="cta-actions">

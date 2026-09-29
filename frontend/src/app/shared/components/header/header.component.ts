@@ -11,7 +11,7 @@ import { CartService } from '../../../core/services/cart.service';
       <div class="container inner">
         <a routerLink="/" class="brand" (click)="closeMenu()">
           <span class="logo-wrap">
-            <img src="/images/logo.png" alt="H2Os — Health | Quality | Luxury" class="logo-img" />
+            <img src="/images/logo.png" alt="H2Os — Wellness | Quality | Luxury" class="logo-img" />
           </span>
           <span class="word">
             <em>Ultra H₂</em>
@@ -59,7 +59,7 @@ import { CartService } from '../../../core/services/cart.service';
         <span class="logo-wrap sm">
           <img src="/images/logo.png" alt="H2Os" class="logo-img" />
         </span>
-        <strong>H2Os — Health | Quality | Luxury</strong>
+        <strong>H2Os — <span class="brand-wellness">Wellness</span> | Quality | Luxury</strong>
         <button class="close" (click)="closeMenu()">×</button>
       </div>
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="closeMenu()">Home</a>

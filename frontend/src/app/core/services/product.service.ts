@@ -52,17 +52,17 @@ export class ProductService {
       const res: any = await firstValueFrom(this.http.get(`${this.api}/products`));
       const data = res?.data ?? res;
       const list: Product[] = Array.isArray(data) ? data : (data ? [data] : []);
-      // Hero-first: keep local Luxe hero in the catalog even though the API
-      // only knows the legacy Ultra H₂ — Luxe stays the default product.
-      const hasLuxe = list.some(p => p.id === this._placeholder.id);
-      const merged: Product[] = hasLuxe ? list : [this._placeholder, ...list];
-      this._catalog.set(merged);
+      // Source of truth is the API — no placeholder injection, so the store
+      // grid and MGT list show strictly real DB rows (no duplicate Luxe).
+      this._catalog.set(list);
       this._loaded.set(true);
-      if (merged.length) {
+      if (list.length) {
         const curId = this._product().id;
-        const stillThere = merged.some(p => p.id === curId);
-        if (!stillThere) {
-          const hero = merged.find(p => p.id === this._placeholder.id) ?? merged[0];
+        const stillThere = list.some(p => p.id === curId);
+        if (!stillThere || curId === this._placeholder.id) {
+          // Hero-first: prefer the real Luxe row so the storefront hero,
+          // price and CTAs run on genuine DB data.
+          const hero = list.find(p => /luxe/i.test(p.name) || /luxe/i.test(p.id)) ?? list[0];
           this._product.set(hero);
           this._selectedId.set(hero.variants[0]?.id ?? 'ultra-h2-luxe');
         }
@@ -142,17 +142,15 @@ export class ProductService {
       const v = prod.variants.find(vv => vv.id === id);
       if (v) return v;
     }
-    return this._placeholder.variants.find(v => v.id === id);
+    return undefined;
   }
 
   getProductByVariant(id: VariantId): Product | undefined {
-    return this._catalog().find(p => p.variants.some(v => v.id === id))
-      ?? (this._placeholder.variants.some(v => v.id === id) ? this._placeholder : undefined);
+    return this._catalog().find(p => p.variants.some(v => v.id === id));
   }
 
   getProduct(id: string): Product | undefined {
-    return this._catalog().find(p => p.id === id)
-      ?? (this._placeholder.id === id ? this._placeholder : undefined);
+    return this._catalog().find(p => p.id === id);
   }
 
   galleryAngles = computed(() => Array.from({ length: 8 }, (_, i) => i * 45));

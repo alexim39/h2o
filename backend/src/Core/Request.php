@@ -32,6 +32,15 @@ final class Request
                 $out[$name] = $v;
             } elseif (in_array($k, ['CONTENT_TYPE','CONTENT_LENGTH'], true)) {
                 $out[strtolower(str_replace('_','-',$k))] = $v;
+            } elseif ($k === 'REDIRECT_HTTP_AUTHORIZATION' && !isset($out['authorization'])) {
+                // Apache rewrite passthrough (see public/.htaccess)
+                $out['authorization'] = $v;
+            }
+        }
+        // Fallback for SAPIs that hide Authorization (mod_php, some FastCGI builds)
+        if (!isset($out['authorization']) && function_exists('getallheaders')) {
+            foreach (getallheaders() as $name => $value) {
+                if (strtolower((string)$name) === 'authorization') { $out['authorization'] = $value; break; }
             }
         }
         return $out;

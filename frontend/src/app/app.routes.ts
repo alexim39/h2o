@@ -4,7 +4,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent),
-    title: 'H2Os — Ultra H₂ | Hydration, upgraded'
+    title: 'H2Os — Your Everyday Wellness | Ultra H₂ Luxe'
   },
   {
     path: 'store',

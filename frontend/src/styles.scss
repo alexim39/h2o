@@ -109,3 +109,11 @@ button { font: inherit; cursor: pointer; }
 /* Section spacing */
 .section { padding: 88px 0; }
 @media (max-width: 768px) { .section { padding: 56px 0; } }
+
+/* H2Os brand signature — "Wellness" mantra mark (gold → neon), reusable app-wide */
+.brand-wellness{
+  background: linear-gradient(92deg, #FFD60A 0%, #00FF88 55%, #00E8C8 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 14px rgba(0,255,136,0.28));
+  letter-spacing:-0.02em; white-space: nowrap;
+}

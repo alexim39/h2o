@@ -30,8 +30,8 @@ export class SeoService {
       });
     } else if (url.startsWith('/store')) {
       this.setTags({
-        title: 'Buy Hydrogen Water Bottle | Store from ₦40,000 | H2Os',
-        description: 'Buy hydrogen water bottle in Nigeria — H2Os Ultra H₂ and 5 more hydrogen brands from ₦40,000. 1600ppb, free shipping, Paystack secure.',
+        title: 'Buy Hydrogen Water Bottle | H2Os Family — Luxe, Go, Pure | Your Everyday Wellness',
+        description: 'Buy hydrogen water bottle in Nigeria — H2Os Ultra H₂ Luxe, Go, Pure and Legacy Elite. Lab-verified SPE/PEM, free shipping, Paystack secure. Your everyday wellness.',
         url: canonical
       });
     } else if (url.startsWith('/videos')) {
@@ -48,8 +48,8 @@ export class SeoService {
       });
     } else {
       this.setTags({
-        title: 'Buy Hydrogen Water Bottle | H2Os Ultra H₂ | Free Shipping',
-        description: 'Buy hydrogen water bottle in Nigeria. H2Os Ultra H₂ — 1600ppb ultra-pure hydrogen, SPE/PEM, free shipping. Shop hydrogen water bottles from ₦40,000.',
+        title: 'Your Everyday Wellness | H2Os Ultra H₂ Luxe | Free Shipping',
+        description: 'Your everyday wellness — H2Os Ultra H₂ Luxe hydrogen water bottle in Nigeria. Ultra-pure SPE/PEM hydrogen, free shipping. Shop the H2Os family.',
         url: canonical
       });
     }

@@ -1,5 +1,9 @@
 RewriteEngine On
 RewriteBase /
+# Preserve Authorization header for PHP-FPM/FastCGI (mod_fcgid strips it
+# otherwise, so MGT admin calls fail with 401 even when signed in)
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
