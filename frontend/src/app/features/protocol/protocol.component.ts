@@ -13,7 +13,7 @@ import { ToastService } from '../../core/services/toast.service';
     <section class="hero-science">
       <div class="container">
         <span class="eyebrow">H2Os • 30-Day Cellular Detox Protocol</span>
-        <h1>Energy. Sleep. Recovery. <em>In 30 days.</em></h1>
+        <h1>Energy. Wellness. Recovery. <em>In 30 days.</em></h1>
         <p class="lead">For Executives, Athletes & High Performers — powered by H2Os molecular hydrogen. Not a gadget. A ritual.</p>
         <div class="hero-stats">
           <div><strong>Wk 1</strong><span>Hydrate</span><em>Lightness</em></div>
