@@ -234,8 +234,8 @@ export class VideosComponent {
     { id:'yt-mimGdwc-w0g', youtubeId:'mimGdwc-w0g', title:'What Makes Hydrogen Rich Water So Special? | TUH #144', category:'learn', badge:'Learn • YouTube • Human Life', desc:'Gary Brecka — what makes H₂-rich water special for human health & longevity. Podcast.' },
     { id:'yt-0JxkAX4xrMM', youtubeId:'0JxkAX4xrMM', title:'Is Hydrogen Water Good for Kidney Disease? Doctor Review', category:'learn', badge:'Learn • YouTube • Kidney', desc:'Dr. Bismah — honest review on H₂ and kidney disease. Educational, not medical advice.' },
     // Added: benefits / disease / human-life support
-    { id:'yt-wX4yqsAklF8', youtubeId:'wX4yqsAklF8', title:'The Science Behind Hydrogen Water — How It Cleans Cells & Restores Health', category:'learn', badge:'Learn • YouTube • Cellular', desc:'Amanda Bobbett — how H₂ cleans cells at the cellular level, restores health. Supports human life.' },
-    { id:'yt-AtBxC9WZXX4', youtubeId:'AtBxC9WZXX4', title:'Can Hydrogen Water Cure Cancer? Claims & Science', category:'learn', badge:'Learn • YouTube • Disease', desc:'Exploring the cancer claims — what science says about H₂ and disease. Educational, not medical advice.' },
+    //{ id:'yt-wX4yqsAklF8', youtubeId:'wX4yqsAklF8', title:'The Science Behind Hydrogen Water — How It Cleans Cells & Restores Health', category:'learn', badge:'Learn • YouTube • Cellular', desc:'Amanda Bobbett — how H₂ cleans cells at the cellular level, restores health. Supports human life.' },
+    //{ id:'yt-AtBxC9WZXX4', youtubeId:'AtBxC9WZXX4', title:'Can Hydrogen Water Cure Cancer? Claims & Science', category:'learn', badge:'Learn • YouTube • Disease', desc:'Exploring the cancer claims — what science says about H₂ and disease. Educational, not medical advice.' },
     { id:'yt-IvNNls6aJLk', youtubeId:'IvNNls6aJLk', title:'Hydrogen Water 101 — Health Benefits Introduction', category:'learn', badge:'Learn • YouTube • 101', desc:'101 guide — how H₂ promises benefits via extra molecules acting as selective antioxidants for wellness.' },
     // More — benefits, disease, human life
     { id:'yt-FZtaexSmYkQ', youtubeId:'FZtaexSmYkQ', title:'Hydrogen Water Benefits EXPLAINED — Dr. Paul Barattiero', category:'learn', badge:'Learn • YouTube • Benefits', desc:'Dr. Paul Barattiero expert guide — why H₂ is gaining worldwide attention for benefits. Supports wellness.' },
@@ -243,6 +243,10 @@ export class VideosComponent {
     { id:'yt-SOmcolTnVCk', youtubeId:'SOmcolTnVCk', title:'Hydrogen Water — The Ultimate Guide', category:'learn', badge:'Learn • YouTube • Guide', desc:'Ultimate guide — deep dive into what H₂ water is, benefits you enjoy drinking it regularly, and human life support.' },
     { id:'yt-C4gIk3sX6dg', youtubeId:'C4gIk3sX6dg', title:'Does Water with Added Hydrogen Have More Benefits?', category:'learn', badge:'Learn • YouTube • Benefits', desc:'The Doctors — does water with added hydrogen have more benefits? Clinical discussion on disease support.' },
     { id:'yt-93Pcv9ry7L8', youtubeId:'93Pcv9ry7L8', title:'Hydrogen Water Bottles: Your Questions Answered.', category:'learn', badge:'Learn • YouTube • Q&A', desc:'10 Years Younger — how bottles work, ppb, daily ritual. Educational.' },
+    // Wellness voices — expert long-form for everyday wellness & longevity
+    { id:'yt-SDZtVonFPXM', youtubeId:'SDZtVonFPXM', title:'Hydrogen Water, Mitochondrial Health & Longevity — Gary Brecka with Tyler LeBaron', category:'learn', badge:'Learn • YouTube • Longevity', desc:'Mitochondrial energy, selective antioxidants and longevity — core science behind everyday wellness. Podcast.' },
+    { id:'yt-K8YtWH6J_7A', youtubeId:'K8YtWH6J_7A', title:'The Science of Molecular Hydrogen Therapy — Tyler LeBaron', category:'learn', badge:'Learn • YouTube • Expert', desc:'Founder of the Molecular Hydrogen Institute (nonprofit) on how H₂ supports wellness. Authority anchor.' },
+    { id:'yt-rTfDNaI6-VQ', youtubeId:'rTfDNaI6-VQ', title:'Hydrogen Water vs Alkaline Water — Dr Andy Galpin', category:'learn', badge:'Learn • YouTube • Honest Take', desc:'Performance scientist separates H₂ evidence from alkaline hype. Balanced, non-endorsing — trust builder.' },
 
   ];
 
